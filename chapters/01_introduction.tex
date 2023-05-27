@@ -3,93 +3,14 @@
 
 \chapter{Introduction}\label{chapter:introduction}
 
-\section{Section}
-Citation test~\parencite{latex}.
+Black box monitoring is a system analysis technique used in software testing and network monitoring. It assesses system functionality based on its output in response to certain inputs, without considering its internal mechanisms, thereby treating the system as a “black box”~\parencite{beizer_black_1996}~\parencite{hierons_software_2006}. 
 
-Acronyms must be added in \texttt{main.tex} and are referenced using macros. The first occurrence is automatically replaced with the long version of the acronym, while all subsequent usages use the abbreviation.
+Uniping designed to enable black box monitoring for applications of \ac{OBE} and \ac{SI} in \ac{ACS} was a deprecated project in Amadeus. Recently, demands for black box monitoring in \ac{ACS} have increased, leading to the reboot of this project. Therefore, the goal for Amadeus is to enhance Uniping in \ac{ACS} for distributed and reliable Black Box Monitoring and contribute Uniping to the Open Source Community as an innovative solution in the realm of system monitoring. 
 
-E.g. \texttt{\textbackslash ac\{TUM\}, \textbackslash ac\{TUM\}} $\Rightarrow$ \ac{TUM}, \ac{TUM}
+Uniping is composed of three main components: the Operator, the Scheduler, and the Pinger. The Operator is responsible for handling the \ac{CRD} that defines the service and related information for monitoring. The Scheduler is tasked with scheduling monitoring requests based on the \ac{CRD} and collecting data from the Pingers. Lastly, the Pinger is a custom worker designed for various monitoring purposes. It sends requests to targets and then returns the necessary data back to the Scheduler.
 
-For more details, see the documentation of the \texttt{acronym} package\footnote{\url{https://ctan.org/pkg/acronym}}.
-\subsection{Subsection}
+However, Uniping has several limitations, including a single point of failure, lack of scalability, and limited customizability. Specifically, the Scheduler, which dispatches monitoring requests and collects response data, represents a single point of failure and could potentially become a traffic bottleneck. Furthermore, Uniping can only be deployed to OpenShift Clusters individually, with no common control plane for all Unipings deployed across different clusters. These design and architectural issues pose significant challenges for the rebooted project, especially for other teams within Amadeus who rely on Uniping for reliable black box monitoring of a large number of distributed and cross-cluster services. 
 
-See~\autoref{tab:sample}, \autoref{fig:sample-drawing}, \autoref{fig:sample-plot}, \autoref{fig:sample-listing}.
+Nowadays, there are renowned tools to implement system monitoring such as Prometheus, Datadog, Nagios, and so on. These tools aim to collect a variety of metrics from targets for monitoring computational resources. Generally, they provide an agent to scrape desired data and then wait for the server's request or actively push these data to the responsible server. Most of them feature great professionals in the realm of monitoring, offering enterprise-level services in reaction to kinds of requirements~\parencite{neves_detailed_2021}.
 
-\begin{table}[htpb]
-  \caption[Example table]{An example for a simple table.}\label{tab:sample}
-  \centering
-  \begin{tabular}{l l l l}
-    \toprule
-      A & B & C & D \\
-    \midrule
-      1 & 2 & 1 & 2 \\
-      2 & 3 & 2 & 3 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\begin{figure}[htpb]
-  \centering
-  % This should probably go into a file in figures/
-  \begin{tikzpicture}[node distance=3cm]
-    \node (R0) {$R_1$};
-    \node (R1) [right of=R0] {$R_2$};
-    \node (R2) [below of=R1] {$R_4$};
-    \node (R3) [below of=R0] {$R_3$};
-    \node (R4) [right of=R1] {$R_5$};
-
-    \path[every node]
-      (R0) edge (R1)
-      (R0) edge (R3)
-      (R3) edge (R2)
-      (R2) edge (R1)
-      (R1) edge (R4);
-  \end{tikzpicture}
-  \caption[Example drawing]{An example for a simple drawing.}\label{fig:sample-drawing}
-\end{figure}
-
-\begin{figure}[htpb]
-  \centering
-
-  \pgfplotstableset{col sep=&, row sep=\\}
-  % This should probably go into a file in data/
-  \pgfplotstableread{
-    a & b    \\
-    1 & 1000 \\
-    2 & 1500 \\
-    3 & 1600 \\
-  }\exampleA
-  \pgfplotstableread{
-    a & b    \\
-    1 & 1200 \\
-    2 & 800 \\
-    3 & 1400 \\
-  }\exampleB
-  % This should probably go into a file in figures/
-  \begin{tikzpicture}
-    \begin{axis}[
-        ymin=0,
-        legend style={legend pos=south east},
-        grid,
-        thick,
-        ylabel=Y,
-        xlabel=X
-      ]
-      \addplot table[x=a, y=b]{\exampleA};
-      \addlegendentry{Example A};
-      \addplot table[x=a, y=b]{\exampleB};
-      \addlegendentry{Example B};
-    \end{axis}
-  \end{tikzpicture}
-  \caption[Example plot]{An example for a simple plot.}\label{fig:sample-plot}
-\end{figure}
-
-\begin{figure}[htpb]
-  \centering
-  \begin{tabular}{c}
-  \begin{lstlisting}[language=SQL]
-    SELECT * FROM tbl WHERE tbl.str = "str"
-  \end{lstlisting}
-  \end{tabular}
-  \caption[Example listing]{An example for a source code listing.}\label{fig:sample-listing}
-\end{figure}
+Uniping aims to provide real-time monitoring, logging, and analysis capabilities. These features enable system administrators to quickly detect and diagnose issues, thereby improving system reliability and performance~\parencite{jorgensen_software_2021}. Furthermore, the proposed improvements to Uniping will offer scalability, availability, and failure tolerance through a redesigning and refactoring of the system architecture. Consequently, the objective of the project is to redesign and implement an open-source black box monitoring system that meets current requirements in the context of distributed architecture.

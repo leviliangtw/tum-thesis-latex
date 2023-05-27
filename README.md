@@ -9,6 +9,10 @@ Comments & contributions are welcome!
 
 ## Quickstart
 
+```shell
+$ sudo apt install latexmk biber texlive-latex-base texlive-latex-extra texlive-bibtex-extra texlive-lang-german
+```
+
  * [Download][template-download] and extract the template, or upload it to an online editor such as [Overleaf][overleaf] or [TUM ShareLaTeX][tum-sharelatex]. If you prefer to use Git, just clone/fork the repository.
 If your editor supports compiling LaTeX, set it up to use `pdflatex` and `biber`. Set the master document to `main.tex`. Alternatively, you can use the provided Makefile to generate a PDF in the `build` directory (requires `latexmk`).
  * To use Visual Studio Code install the [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) extension. Then as soon as you click on "Save" it automatically compiles your thesis for you without having to configure anything.
