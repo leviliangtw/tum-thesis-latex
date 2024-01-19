@@ -5,8 +5,231 @@
 
 \section{System Goals}
 
+This project aims to develop a scalable, reliable, and cloud-ready monitoring platform within the Prometheus ecosystem, designed for seamless integration into the Amadeus Observability Platform. To maintain compatibility and streamline integration with the existing platform, it will also support various probers based on custom protocols, including the \ac{TCIL} protocol used at Amadeus. 
+
+To ensure scalability, the platform should examine the bottleneck and consider the automated horizontal scaling among all components. Specifically, the design must keep all components stateless as much as possible. As for the inevitable stateful components, the maintenance of states should be handled properly for scaling. Meanwhile, distinct strategies like load balancing and sharding should be considered appropriately in reaction to different circumstances. 
+
+Reliability decides the trustworthiness of the Active Monitoring Platform, and the critical point to assure reliability is fault tolerance. To elaborate, as a prober deployed responsible for probing targets is down, another prober could take over and continue operating. 
+
+For cloud readiness, the design must be compatible with cloud infrastructure. Amadeus operates thousands of applications across numerous OpenShift clusters, necessitating that the Active Monitoring Platform be tailored for cloud platforms. Additionally, artifact versioning is crucial in cloud readiness, offering a centralized and managed system package for cloud deployment and the prerequisite for GitOps. 
+
+Overall, the proposed design addresses the demands for active monitoring among thousands of applications deployed and distributed in dozens of clusters. With a user-friendly and efficient solution, the existing Amadeus Observability Platform could seamlessly integrate the active monitoring results and achieve high availability and efficiency. 
+
+The current system for active monitoring features lightweight scheduling and probing with an operator managing configurations as \ac{CRD}s. Substituting the scheduler with the Prometheus Agent is critical, improving efficiency with the remote write feature and decreasing peak requests by spreading requests over a scrape interval. Next, employing the Prometheus Operator breeds further enhancements, including deployment management, automatic scalability, configuration sharding, etc. In brief, implementing the above two aspects successfully meets Amadeus's active monitoring goals. 
+
 \section{System Overview}
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+      node/.style={draw, align=center, minimum height=3em, anchor=west}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=west}
+    ]
+
+    \node (LB) [node distance=2cm, below=of C, text width=6em, node, fill=red!10] {Load\\Balancer};
+    \node (Prober1) [node distance=3cm, below left=of LB.west, text width=6em, node, fill=red!10] {TCIL\\Prober};
+    \node (Prober2) [node distance=2cm, below right=of Prober1.west, text width=6em, node, fill=red!10] {Blackbox\\Exporter};
+    \node (LBZ) [zone, dashed, rounded corners, fit={(LB) (Prober1) (Prober2)}] {};
+    \node (PO) [node distance=5cm, right=of LB.west, text width=6em, node, fill=red!10] {Prometheus\\Operator};
+    \node (PA) [node distance=3cm, below=of PO.west, text width=6em, node, fill=red!10] {Prometheus\\Agents};
+    \node (PAZ) [zone, dashed, rounded corners, fit={(PA)}] {};
+    \node (CRDP) [node distance=7em, above=of PO.base, text width=6em, node, ellipse, fill=blue!10, anchor=base] {CRD\\Probe};
+    \node (CRDPA) [node distance=5cm, left=of CRDP, text width=8em, node, ellipse, fill=blue!10] {CRD\ PrometheusAgent};
+    \node (UZ) [zone, dashed, fit={(LB) (Prober1) (Prober2) (LBZ) (PO) (PA) (PAZ) (CRDPA) (CRDP)}] {};
+    \node (U) [node distance=6pt, above=of UZ.north west, zonetag, anchor=west] {Active Monitoring Platform};
+
+    \node (TS2) [node distance=10em, below=of Prober2.base, text width=5em, node, fill=green!10] {Target\\Service\ 2};
+    \node (C2Z) [zone, dashed, fit={(TS2)}] {};
+    \node (C2) [node distance=2pt, below=of C2Z, zonetag] {Product B};
+
+    \node (TS1) [node distance=9em, left=of TS2, text width=5em, node, fill=green!10] {Target\\Service\ 1};
+    \node (C1Z) [zone, dashed, fit={(TS1)}] {};
+    \node (C1) [node distance=2pt, below=of C1Z, zonetag] {Product A};
+
+    \node (TR) [node distance=11em, below=of PA.west, text width=6em, node, fill=green!10] {Thanos\\Receive};
+    \node (GZ) [zone, dashed, fit={(TR)}] {};
+    \node (G) [node distance=2pt, below=of GZ, zonetag] {Amadeus Observability Platform};
+
+    \node (CZ) [zone, fit={(U) (LB) (Prober1) (Prober2) (PO) (PA) (CRDPA) (CRDP) (UZ) (G) (GZ) (TR) (TS1) (TS2) (C1) (C1Z)}] {};
+    \node (C)[node distance=6pt, above=of CZ.north west, zonetag, anchor=west] {OpenShift Cluster};
+
+    \path[->]
+      (PO) edge node[auto] {manage} (PA)
+      (PO) edge node[auto, right] {} (CRDPA)
+      (PO) edge node[auto, left] {watch} (CRDP)
+      (PA) edge node[auto, right] {remote write} (TR)
+      (PA) edge node[auto, sloped] {scrape} (LB)
+      (LB) edge node[auto] {} (Prober1)
+      (LB) edge node[auto] {} (Prober2)
+      (Prober1) edge node[auto] {probe} (TS1)
+      (Prober2) edge node[auto] {probe} (TS2);
+  \end{tikzpicture}
+  \caption[System Design]{System Design with Prometheus Operator, Prometheus Agent and Probers.}\label{fig:system-design}
+\end{figure}
+
+The proposal is based on the container orchestrator like Kubernetes or OpenShift. As for Amadeus, Openshift 4.11 is the most common release installed as individual and independent clusters. Inside the cluster, a slightly modified Prometheus Operator would be installed, responsible for deploying and managing Promenteus Agents and probe configurations. Next, probers, including the Blackbox Exporter and the customized probers like the \ac{TCIL} Pinger, would be deployed with the load balancer, leveraging horizontal scalability for better load distribution. 
+
+Firstly, the deployed Prometheus Operator will monitor the \ac{CRD}s created for deploying Prometheus Agents and probe configurations. It will maintain its state, offering scaling or sharding as required. Subsequently, the Prometheus Agent will handle scheduling probes and remotely transmit metrics to the Prometheus remote endpoint or Thanos Receive.
+
+Secondly, deploying probers with the load balancer enables the Prometheus Agent to target the same host, leveraging load distribution and enhancing reliability without extra effort. Additionally, with Kubernetes or OpenShift, the inherent scalability and the ingress or load balancer provide valuable and reliable support, significantly boosting this design. 
+
+Finally, users with active monitoring requirements across various clusters and namespaces can leverage the official \ac{CRD}: Probe to customize their specific requests. In summary, this system architecture, shown in \autoref{fig:system-design}, offers a more efficient, seamlessly integrated, and highly available solution for active monitoring for the Amadeus Observability Platform. 
 
 \section{System Workflow}
 
-\section{Integrated GitOps}
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+    node distance=2cm, auto, >=stealth', shorten >=1pt,
+    node/.style={draw, align=center, minimum height=3em, scale=0.8}, 
+    ground/.style={node distance=7cm}, 
+    description/.style={text width=12em, scale=0.7, above, midway, align=center}, 
+    selfloop/.style={text width=12em, scale=0.7, right, near end, align=left}, 
+    ]
+    \node[draw, circle, scale=0.8] (user) {Admin};
+    \node[right=of user, node] (OC) {OpenShift\\Cluster};
+    \node[right=of OC, node] (PO) {Prometheus\\Operator};
+    \node[right=of PO, node] (PA) {Prometheus\\Agent};
+    %
+    \node[ground, below=of OC] (OC_ground) {};
+    \node[ground, below=of user] (user_ground) {};
+    \node[ground, below=of PO] (PO_ground) {};
+    \node[ground, below=of PA] (PA_ground) {};
+    %
+    \draw[dashed] (user) -- (user_ground);
+    \draw[dashed] (OC) -- (OC_ground);
+    \draw[dashed] (PO) -- (PO_ground);
+    \draw[dashed] (PA) -- (PA_ground);
+    %
+    \draw[->] ($(user)!0.25!(user_ground)$) -- node[description]{Create/update the CR: PrometheusAgent} ($(OC)!0.25!(OC_ground)$);
+    \draw[->] ($(OC)!0.35!(OC_ground)$) -- node[description]{Response: HTTP 200 OK} ($(user)!0.35!(user_ground)$);
+    \draw[<-] ($(OC)!0.45!(OC_ground)$) -- node[description]{Watch and fetch the updated CR} ($(PO)!0.45!(PO_ground)$);
+    \draw[->] ($(PO)!0.55!(PO_ground)$) -| node[selfloop]{Build the deployment} ++(0.5, -0.25) -- ++(-0.5, 0);
+    \draw[->] ($(PO)!0.75!(PO_ground)$) -- node[description]{Create or apply the deployment} ($(PA)!0.75!(PA_ground)$);
+  \end{tikzpicture}
+  \caption[System Workflow - PrometheusAgent Configurations]{Deploying or updating Prometheus Agent by admin.}\label{fig:system-workflow-prometheusagent}
+\end{figure}
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+    node distance=2cm, auto, >=stealth', shorten >=1pt,
+    node/.style={draw, align=center, minimum height=3em, scale=0.8}, 
+    ground/.style={node distance=7cm}, 
+    description/.style={text width=12em, scale=0.7, above, midway, align=center}, 
+    selfloop/.style={text width=12em, scale=0.7, right, near end, align=left}, 
+    ]
+    \node[draw, circle, scale=0.8] (user) {User};
+    \node[right=of user, node] (OC) {OpenShift\\Cluster};
+    \node[right=of OC, node] (PO) {Prometheus\\Operator};
+    \node[right=of PO, node] (PA) {Prometheus\\Agent};
+    %
+    \node[ground, below=of OC] (OC_ground) {};
+    \node[ground, below=of user] (user_ground) {};
+    \node[ground, below=of PO] (PO_ground) {};
+    \node[ground, below=of PA] (PA_ground) {};
+    %
+    \draw[dashed] (user) -- (user_ground);
+    \draw[dashed] (OC) -- (OC_ground);
+    \draw[dashed] (PO) -- (PO_ground);
+    \draw[dashed] (PA) -- (PA_ground);
+    %
+    \draw[->] ($(user)!0.25!(user_ground)$) -- node[description]{Create/update the CR: Probe} ($(OC)!0.25!(OC_ground)$);
+    \draw[->] ($(OC)!0.35!(OC_ground)$) -- node[description]{Response: HTTP 200 OK} ($(user)!0.35!(user_ground)$);
+    \draw[<-] ($(OC)!0.45!(OC_ground)$) -- node[description]{Watch and fetch the updated CR} ($(PO)!0.45!(PO_ground)$);
+    \draw[->] ($(PO)!0.55!(PO_ground)$) -| node[selfloop]{Build configurations} ++(0.5, -0.25) -- ++(-0.5, 0);
+    \draw[->] ($(PO)!0.75!(PO_ground)$) -- node[description]{Reload probe configurations} ($(PA)!0.75!(PA_ground)$);
+    \draw[->] ($(PA)!0.85!(PA_ground)$) -| node[selfloop]{Schedule probes} ++(0.5, -0.25) -- ++(-0.5, 0);
+  \end{tikzpicture}
+  \caption[System Workflow - Probe Configurations]{Creating or updating probe configurations by user.}\label{fig:system-workflow-probe}
+\end{figure}
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+    node distance=2cm, auto, >=stealth', shorten >=1pt,
+    node/.style={draw, align=center, minimum height=3em, scale=0.8}, 
+    ground/.style={node distance=7cm}, 
+    description/.style={text width=12em, scale=0.7, above, midway, align=center}, 
+    selfloop/.style={text width=12em, scale=0.7, right, near end, align=left}, 
+    ]
+    \node[node] (PA) {Prometheus\\Agent};
+    \node[right=of PA, node] (prober) {Prober};
+    \node[right=of prober, node] (target) {Target};
+    \node[right=of target, node] (TR) {Thanos\\Receive};
+    %
+    \node[ground, below=of PA] (PA_ground) {};
+    \node[ground, below=of prober] (prober_ground) {};
+    \node[ground, below=of target] (target_ground) {};
+    \node[ground, below=of TR] (TR_ground) {};
+    %
+    \draw[dashed] (PA) -- (PA_ground);
+    \draw[dashed] (prober) -- (prober_ground);
+    \draw[dashed] (target) -- (target_ground);
+    \draw[dashed] (TR) -- (TR_ground);
+    %
+    \draw[->] ($(PA)!0.25!(PA_ground)$) -- node[description]{Scrape\\(schedule probes)} ($(prober)!0.25!(prober_ground)$);
+    \draw[->] ($(prober)!0.40!(prober_ground)$) -- node[description]{Probe} ($(target)!0.40!(target_ground)$);
+    \draw[<-] ($(prober)!0.50!(prober_ground)$) -- node[description, below]{Response\\(raw data)} ($(target)!0.50!(target_ground)$);
+    \draw[<-] ($(PA)!0.65!(PA_ground)$) -- node[description]{Response\\(refined metrics)} ($(prober)!0.65!(prober_ground)$);
+    \draw[->] ($(PA)!0.80!(PA_ground)$) -- node[description, below]{Remote write\\(relabeld metrics)} ($(TR)!0.80!(TR_ground)$);
+  \end{tikzpicture}
+  \caption[System Workflow - Probe Scheduling]{Scheduling probes by Prometheus Agent.}\label{fig:system-workflow-scheduling}
+\end{figure}
+
+To clearly illustrate the system workflow of this design, three workflows have to be discussed in the following. They are responsible for the maintenance of Prometheus Agent, configuring probe settings, and scheduling probes respectively. 
+
+Firstly, for the active monitoring platform's initialization, Prometheus Agent must be deployed by the admin via the official \ac{CRD}: PrometheusAgent. As shown in \autoref{fig:system-workflow-prometheusagent}, the admin creates or updates the \ac{CR} and receives the successful response. Then, the Prometheus Operator that keeps watching the \ac{CR} retrieves the configuration and generates a new template to create or update the deployment of the Prometheus Agent. 
+
+Secondly, the workflow to create or modify probe configurations is similar to the above one, as they both leverage the Prometheus Operator for management and execution. In \autoref{fig:system-workflow-probe}, the user utilizes the \ac{CR}: Probe, specifying the target \ac{URL}, scrape interval, and timeout interval, etc. As mentioned above, the Prometheus Operator would take over it, reloading the configuration of Prometheus Agent and bringing about the desired scheduling of probes. 
+
+Lastly, the third workflow is fully automatic, carrying out probes over different kinds of targets and operated by the Prometheus Agent as in \autoref{fig:system-workflow-scheduling}. With proper configurations of Probes, which the Prometheus Operator should load with the \ac{CR}: Probe as mentioned in the previous paragraph, The Prometheus Agent would keep scraping the Probe with specified labels, parameters, modules, etc., and the Prober would probe targets accordingly, and then respond to the Prometheus Agent with collected raw information. Finally, after some operation on the metrics like relabeling or filtering, the Prometheus Agent sends these data to the Thanos Receive via remote write. 
+
+\section{Integration with GitOps}
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily, anchor=west},
+      node/.style={draw, align=center, minimum height=3em, anchor=west}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+    ]
+
+    \node (user) [node distance=5em, text width=2em, node, circle, fill=green!10] {User};
+    \node (git) [node distance=5em, text width=2em, node, diamond, fill=gray!10, right=of user] {Git};
+    \node (argo) [node distance=7em, text width=3em, node, fill=orange!10, right=of git] {Argo};
+
+    \node (api) [node distance=3em, text width=8em, node, fill=red!10, below=of argo] {OpenShift API};
+
+    \node (CRDP) [node distance=3em, text width=6em, node, ellipse, fill=blue!10, below=of api] {CRD\\Probe};
+    \node (CRDPA) [node distance=3em, text width=8em, node, ellipse, fill=blue!10, left=of CRDP] {CRD\ PrometheusAgent};
+    \node (UZ) [zone, dashed, fit={(CRDPA) (CRDP)}] {};
+    \node (U) [node distance=6pt, above=of UZ.north west, zonetag] {Active Monitoring Platform};
+
+    \node (CZ) [zone, fit={(api) (CRDPA) (CRDP) (UZ) (U)}] {};
+    \node (C)[node distance=6pt, above=of CZ.north west, zonetag] {OpenShift Cluster};
+
+    \path[->] (user) edge node[auto] {PR merge} (git);
+    \path[<-] (git) edge node[auto] {pull changes} (argo);
+    \path[->] (argo) edge node[auto] {webhook event} (api);
+    \path[->] (api) edge node[auto] {apply} (CRDP);
+    \path[->] (api) edge node[auto] {apply} (CRDPA);
+  \end{tikzpicture}
+  \caption[GitOps]{Utilizing GitOps to manage \ac{CRD}s.}\label{fig:gitops}
+\end{figure}
+
+So far, the design successfully addresses all requirements regarding active monitoring. However, Amadeus has plenty of clusters and namespaces, and numerous developers or users would deploy their own \ac{CR} in their clusters and namespaces. So, managing deployed \ac{CR}s becomes another crucial issue. 
+
+GitOps is a new approach to automate the management of the cloud infrastructure. Specifically, GitOps employs the Git repository, based on its modifications, triggering automatic reconfiguration and synchronization of the infrastructure as shown in \autoref{fig:gitops}. Therefore, GitOps could also achieve \ac{IaC} by managing configurations in a Git repository. 
+
+\section{User Interface with Grafana}
+
+The implementations described above enable users to achieve scalable, reliable, and cloud-ready active monitoring. However, non-visualized results can be challenging for intuitive human understanding. Therefore, a vital final step involves using Grafana, an open-source analytics and visualization project, to create a dedicated dashboard for active monitoring. Since the Amadeus Observability Platform has already deployed the complete Grafana web application, no further deployment is necessary, apart from configuring the dashboard.

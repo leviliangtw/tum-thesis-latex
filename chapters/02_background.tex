@@ -1,12 +1,16 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
-\usetikzlibrary{positioning,fit,calc}
+\usetikzlibrary{positioning,fit,calc,arrows,shapes}
 
 \chapter{Background}\label{chapter:background}
 
-\section{Black Box Monitoring}
+\section{Active Monitoring and Black Box Monitoring}
 
-Black box monitoring is a well-established approach to system analysis, most commonly applied in software testing and network monitoring. It evaluates a system's functionality based on its responses to given inputs while abstracting away the system's internal workings~\parencite{jorgensenSoftwareTestingCraftsman2021}. This technique metaphorically views the system as a "black box" in ~\autoref{fig:example-black-box-monitoring}, signifying that the internal mechanisms are not visible or accounted for in the evaluation process~\parencite{myersArtSoftwareTesting2004}.
+Monitoring IT systems brings insight into systems in terms of observability, becoming increasingly critical to improving systems. Based on simulation data generated synthetically, active monitoring proactively monitors the performance of networks, applications, and infrastructure~\parencite{splunkActiveVsPassive2023}. Another well-known monitoring method is black box monitoring. Like active monitoring, black box monitoring evaluates a system's functionality based on its responses to given inputs while abstracting away the system's internal workings~\parencite{jorgensenSoftwareTestingCraftsman2021}. 
+
+Active monitoring, also called synthetic monitoring, mainly identifies potential application issues, including health checks, API endpoint tests, etc. In addition, active monitoring also includes evaluating the performance of hardware resources and benchmarking the network performance~\parencite{splunkActiveVsPassive2023}. For example, the \ac{QoS} requirements of the network like latency and bandwidth, the ~\ac{CPU} utilization, and the memory utilization. 
+
+Black box monitoring is a well-established approach to system analysis, commonly applied in software testing and network monitoring. In contrast to white box monitoring, which baesd on metrics exposed by the internals of the system, it focuses on external behavior rather than internal metrics~\parencite{beyerSiteReliabilityEngineering2016}. This technique metaphorically views the system as a "black box" in ~\autoref{fig:example-black-box-monitoring}, signifying that the internal mechanisms are not visible or accounted for in the evaluation process~\parencite{myersArtSoftwareTesting2004}. 
 
 \begin{figure}[htpb]
     \centering
@@ -15,23 +19,20 @@ Black box monitoring is a well-established approach to system analysis, most com
       \node (R0) {Input};
       \node (R1) [right of=R0, minimum height=7em, text width=7em, align=center, draw] {Application\\(Black\ Box)};
       \node (R2) [right of=R1] {Output};
-  
       \path[->]
         (R0) edge node {} (R1)
         (R1) edge node {} (R2);
     \end{tikzpicture}
-    \caption[Example black-box monitoring]{An example of a black-box monitoring.}\label{fig:example-black-box-monitoring}
+    \caption[Black-box monitoring Example]{An example of a black-box monitoring.}\label{fig:example-black-box-monitoring}
 \end{figure}
 
-One of the key advantages of black box monitoring is its simplicity and ease of implementation. Since it doesn't require in-depth knowledge of the system internals, it can be quickly deployed across various platforms and systems. This quality fosters wide applicability, accommodating diverse programming languages and system architectures. Furthermore, black box monitoring has a unique focus on the user experience. By simulating user actions and recording the system's responses, it offers a valuable measure of system functionality from a user's perspective. Thus, it is instrumental in ensuring that the system effectively meets the end-users' requirements~\parencite{nidhraBlackBoxWhite2012}. 
+Active monitoring and black box monitoring share some similar features but embody distinct concepts. Both involve simulating requests to target APIs or other endpoints, such as those of \ac{TCP}, \ac{HTTP}, or other customized protocols. Specifically, These symptom-oriented techniques mimic user behavior, thereby reflecting real issues~\parencite{beyerSiteReliabilityEngineering2016}. By definition, active monitoring can encompass black box monitoring but focuses on different aspects. Active monitoring emphasizes proactive check-ups, actively testing and querying systems, while black box monitoring is more of an observational approach, focusing on the outcomes and behaviors of systems without delving into their internal mechanics. In summary, despite of slight difference, both methods are valuable in system monitoring and could contribute to the comprehensive view of system health and performance. 
 
-However, while the black box approach has its merits, it is not without challenges. One significant limitation is the potential for limited coverage. Since black box monitoring concentrates on the inputs and outputs, it might overlook internal system issues. If a problem doesn't immediately or directly affect the system output, it may remain undetected, only to potentially cause serious issues down the line~\parencite{spillnerSoftwareTestingFoundations2021}. Moreover, black box monitoring could contribute to inefficiency in troubleshooting. A system failure detected by black box testing can be difficult to diagnose and fix due to the lack of visibility into the system internals. Pinpointing the specific area of the system causing the issue may turn into a challenging endeavor.
+In system monitoring, the "Four Golden Signals" are essential: Latency, Traffic, Errors, and Saturation. Latency signifies response times, differentiating between successful and failed requests. Traffic gauges demand, such as HTTP requests per second. Errors identify the rate of failures, whether explicit, implicit, or policy-driven. Saturation looks at resource utilization and potential bottlenecks~\parencite{beyerSiteReliabilityEngineering2016}. Bridging these metrics, active monitoring proactively tests systems for performance and reliability, while black box monitoring observes system behavior without internal visibility. The combination enhanced the effectiveness of the "Four Golden Signals," ensuring comprehensive system monitoring and optimal system performance.
 
-Despite existing challenges, the prospects for black box monitoring are increasingly optimistic, particularly in our rapidly evolving digital landscape. As customer satisfaction and user experience become paramount in the digital economy, the ability of black box monitoring to accurately reflect system availability and performance from the user's perspective proves invaluable. Moreover, with the advancement of other evolving techniques like eBPF, the scope of black box monitoring continues to expand~\parencite{nevesDetailedBlackboxMonitoring2021}~\parencite{brondolinBlackboxMonitoringApproach2020}. For instance, eBPF's ability to execute custom code in kernel space can provide deeper insights into system operations, thereby enhancing internal observability~\parencite{jonathanBPFUniversalInkernel2014}.
+As the IT landscape becomes more complex with microservices and cloud-based applications, understanding the internals of every service can be overwhelming. In such a scenario, active monitoring and black box monitoring's ability to provide a holistic view of system behavior can be highly beneficial. Moreover, in light of growing privacy regulations and data protection measures, the non-invasive approach aligns with the current trends. Simulating test inputs and focusing on system outputs rather than internals could minimize privacy or data protection concerns. 
 
-As the IT landscape becomes more complex with microservices and cloud-based applications, understanding the internals of every service can be overwhelming. In such a scenario, black box monitoring's ability to provide a holistic view of system behavior can be highly beneficial. Moreover, in light of growing privacy regulations and data protection measures, black box monitoring's non-invasive approach aligns with the current trends. Focusing on system outputs rather than internals could potentially minimize privacy or data protection concerns.
-
-In conclusion, black box monitoring remains a vital tool for system testing and monitoring, despite its inherent challenges. Its future appears increasingly integrated with AI technologies and aligned with user-centric design principles. Nevertheless, black box monitoring should not be considered a stand-alone solution but rather a component of a comprehensive monitoring strategy that incorporates various techniques to effectively manage system performance.
+In conclusion, active monitoring and black box monitoring are vital tools for system testing and monitoring. Its future appears increasingly integrated with cloud technologies and aligned with user-centric design principles. Nevertheless, they should not be considered a stand-alone solution but rather a component of a comprehensive monitoring strategy that incorporates various techniques to manage system performance effectively. 
 
 \section{Prometheus Agent and Blackbox Exporter}
 
@@ -46,23 +47,25 @@ The Prometheus Agent is a specialized mode of a standard Prometheus instance aim
         shorten >=1pt,
         zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
         node/.style={draw, align=center, minimum height=3em, anchor=west}, 
-        zone/.style={draw=black!60}
+        zone/.style={draw=black!60, inner sep=8pt}
       ]
 
-      \node (C) at(0, 0) [zonetag] {Cluster};
-      \node (PA) [node distance=1cm, below=of C.west, text width=11em, node] {Prometheus\ Agent};
-      \node (Apps) [node distance=5cm, right of=PA, text width=5em, node] {Apps};
-      \node [zone, fit={(C) (PA) (Apps)}] {};
+      \node (PA) [node distance=1cm, text width=6em, node, fill=red!10] {Prometheus\\Agent};
+      \node (Apps) [node distance=1.5cm, above right=of PA, text width=6em, node] {Apps};
+      \node (CZ) [zone, fit={(PA) (Apps)}] {};
+      \node (C) [zonetag, node distance=0.5em, above=of CZ] {Cluster Level};
 
-      \node (G) [node distance=2cm, below=of PA, zonetag] {Global};
-      \node (P) [node distance=1cm, below=of G.west, text width=11em, node] {Prometheus/Thanos};
-      \node (Am) [node distance=5cm, right of=P, text width=7em, node] {Alertmanager};
-      \node [zone, fit={(G) (P) (Am)}] {};
+      \node (P) [node distance=1.5cm, right=of Apps, text width=6em, node] {Prometheus};
+      \node (Am) [node distance=3cm, below=of P.west, text width=6em, node] {Alertmanager};
+      \node (PQ) [node distance=1cm, right=of Am, text width=6em, node] {PromQL};
+      \node (GZ) [zone, fit={(P)}] {};
+      \node (G) [zonetag, node distance=0.5em, above=of GZ] {Global Level};
   
-      \path[->]
-        (P) edge node[below, sloped] {alert} (Am)
-        (PA) edge node[auto] {remote write} (P)
-        (PA) edge node[below, sloped] {scrape} (Apps);
+      \path[->] (P) edge node[auto] {alert} (Am);
+      \path[->, color=orange] (PA) edge[bend right, line width=0.5mm] node[auto, font=\bfseries] {remote write} (P);
+      \path[->, color=orange] (PA) edge[line width=0.5mm] node[auto, font=\bfseries] {scrape} (Apps);
+      \path[->] (PQ) edge node[auto, right] {query} (P);
+
     \end{tikzpicture}
     \caption[Prometheus Agent]{Prometheus Agent with scrape and remote write.}\label{fig:prometheus-agent}
 \end{figure}
@@ -79,11 +82,36 @@ Overall, the active and extensive community surrounding Prometheus plays a signi
 
 The Operator Pattern, defined by the \ac{CNCF}, represents a paradigm shift in Kubernetes, enabling users to automate the maintenance and configuration of applications~\parencite{kubernetesOperatorPattern}. The Prometheus Operator embodies this pattern, serving as an implementation that addresses the practical needs of deploying and managing Prometheus components. Through reconciliation, the Prometheus Operator aligns the deployment's actual state with the user's desired state, streamlining its lifecycle in Kubernetes~\parencite{prometheusoperatorIntroduction2020}.
 
-The Operator Pattern extends Kubernetes' native capabilities by introducing \ac{CRs} and controllers. The operator is the essential software extension that utilize the Kubernetes control plane and API to create, configure, and manage instances of complex stateful applications on behalf of a Kubernetes user~\parencite{dobiesKubernetesOperators}. They encapsulate operational knowledge, automating the management tasks that would typically require manual operations~\parencite{cncfCNCFOperatorWhite}. 
+The Operator Pattern extends Kubernetes' native capabilities by introducing the \ac{CR} and controllers. The operator, that is, the controller, is the essential software extension that utilizes the Kubernetes control plane and API to create, configure, and manage instances of complex stateful applications on behalf of a Kubernetes user~\parencite{dobiesKubernetesOperators}. As shown in ~\autoref{fig:operator-pattern}, the controller continuously reconciles the current state with the desired state, encapsulated in custom resources, using a loop to transition watched objects to their target state. In conclusion, the Operator Pattern encapsulates operational knowledge, automating the management tasks typically requiring manual operations~\parencite{cncfCNCFOperatorWhite}. 
 
-The Prometheus Operator is tailored to simplify the deployment and management of Prometheus within Kubernetes environments. It enables Kubernetes-native deployment and automated management of Prometheus and its associated monitoring components. Key features of the operator include Kubernetes \ac{CRs} for deploying and managing Prometheus, Alertmanager, and so on, streamlined deployment configurations for setting up Prometheus essentials like versions and retention policies, and automatic generation of monitoring target configurations. This approach facilitates easy installation and version upgrades, simplifies configuration management, and ensures seamless integration with existing Kubernetes resources~\parencite{prometheusoperatorIntroduction2020}. 
+\begin{figure}[htpb]
+    \centering
+    % This should probably go into a file in figures/
+    \begin{tikzpicture}[
+        shorten >=1pt,
+        zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+        node/.style={draw, align=center, minimum height=3em}, 
+        zone/.style={draw=black!60}
+      ]
 
-In terms of current advancements in black box monitoring, the Prometheus Operator supports two \ac{CRs}: Probe and PrometheusAgent. The Probe resource defines monitoring for a set of static targets or ingresses, such as specifying the target for the Blackbox Exporter and the module to be used. On the other hand, PrometheusAgent is responsible for defining a Prometheus agent deployment. This includes configurations like the number of replicas, ScrapeConfigs, and advanced features like sharding~\parencite{prometheusoperatorPrometheusAgentSupport}. Notably, it incorporates the ProbeSelector feature, which links to the previously defined Probe resource, enhancing its functionality and integration~\parencite{prometheusoperatorAPIReference}.
+      \node (EE) at(0, 0) [node, text width=5em] {External\ Events};
+      \node (CS) [node distance=3em, below=of EE, text width=5em, node] {Current\ State};
+      \node (CR) [node distance=3em, below=of CS, text width=5em, node] {Custom\ Resource};
+      \node (C) [node distance=9em, right=of CS, text width=5em, ellipse, node] {Controller};
+      \node (DS) [node distance=12em, right of=C, text width=5em, node] {Desired\ State};
+  
+      \path[->]
+        (C) edge node[above] {} (EE)
+        (C) edge node[above] {watch\ \&\ compare} (CS)
+        (C) edge node[above] {} (CR)
+        (C) edge node[above] {reconcile} (DS);
+    \end{tikzpicture}
+    \caption[Operator Pattern]{Illustration of the Operator Pattern.}\label{fig:operator-pattern}
+\end{figure}
+
+The Prometheus Operator is tailored to simplify the deployment and management of Prometheus within Kubernetes environments. It enables Kubernetes-native deployment and automated management of Prometheus and its associated monitoring components. Key features of the operator include Kubernetes \ac{CR}s for deploying and managing Prometheus, Alertmanager, and so on, streamlined deployment configurations for setting up Prometheus essentials like versions and retention policies, and automatic generation of monitoring target configurations. This approach facilitates easy installation and version upgrades, simplifies configuration management, and ensures seamless integration with existing Kubernetes resources~\parencite{prometheusoperatorIntroduction2020}. 
+
+In terms of current advancements in black box monitoring, the Prometheus Operator supports two \ac{CR}s: Probe and PrometheusAgent. The Probe resource defines monitoring for a set of static targets or ingresses, such as specifying the target for the Blackbox Exporter and the module to be used. On the other hand, PrometheusAgent is responsible for defining a Prometheus agent deployment. This includes configurations like the number of replicas, ScrapeConfigs, and advanced features like sharding~\parencite{prometheusoperatorPrometheusAgentSupport}. Notably, it incorporates the ProbeSelector feature, which links to the previously defined Probe resource, enhancing its functionality and integration~\parencite{prometheusoperatorAPIReference}.
 
 Despite these advancements, a significant gap persists in the management and configuration of the Blackbox Exporter within the Prometheus Operator framework. Specifically, there is no support for using a custom resource definition to manage the Blackbox Exporter. Consequently, users are required to deploy their own instances and modules of the Blackbox Exporter~\parencite{prometheusBlackboxExporter2023}. This limitation underscores the need for more integrated solutions that can simplify the deployment and scaling of the Blackbox Exporter, ensuring it meets the evolving requirements of black box monitoring in complex environments. 
 
