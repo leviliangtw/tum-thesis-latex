@@ -19,6 +19,8 @@ The current system for active monitoring features lightweight scheduling and pro
 
 \section{System Overview}
 
+The suggested design utilizes container orchestrators such as Kubernetes or OpenShift. At Amadeus, the predominant version is the OpenShift 4.11, typically set up as individual and independent clusters. The subsequent section details the system design shown in \autoref{fig:system-design}. 
+
 \begin{figure}[htpb]
   \centering
   % This should probably go into a file in figures/
@@ -29,31 +31,33 @@ The current system for active monitoring features lightweight scheduling and pro
       zone/.style={draw=black!60, inner sep=8pt, anchor=west}
     ]
 
-    \node (LB) [node distance=2cm, below=of C, text width=6em, node, fill=red!10] {Load\\Balancer};
-    \node (Prober1) [node distance=3cm, below left=of LB.west, text width=6em, node, fill=red!10] {TCIL\\Prober};
-    \node (Prober2) [node distance=2cm, below right=of Prober1.west, text width=6em, node, fill=red!10] {Blackbox\\Exporter};
-    \node (LBZ) [zone, dashed, rounded corners, fit={(LB) (Prober1) (Prober2)}] {};
-    \node (PO) [node distance=5cm, right=of LB.west, text width=6em, node, fill=red!10] {Prometheus\\Operator};
+    \node (LB1) [node distance=2cm, below=of C, text width=6em, node, fill=red!10] {Load\\Balancer};
+    \node (LB2) [node distance=3cm, left=of LB1, text width=6em, node, fill=red!10] {Load\\Balancer};
+    \node (Prober1) [node distance=3cm, below=of LB1.west, text width=6em, node, fill=red!10] {TCIL\\Probers};
+    \node (Prober2) [node distance=3cm, below=of LB2.west, text width=6em, node, fill=red!10] {Blackbox\\Exporters};
+    \node (LB1Z) [zone, dashed, rounded corners, fit={(LB1) (Prober1)}] {};
+    \node (LB2Z) [zone, dashed, rounded corners, fit={(LB2) (Prober2)}] {};
+    \node (PO) [node distance=5cm, right=of LB1.west, text width=6em, node, fill=red!10] {Prometheus\\Operator};
     \node (PA) [node distance=3cm, below=of PO.west, text width=6em, node, fill=red!10] {Prometheus\\Agents};
     \node (PAZ) [zone, dashed, rounded corners, fit={(PA)}] {};
     \node (CRDP) [node distance=7em, above=of PO.base, text width=6em, node, ellipse, fill=blue!10, anchor=base] {CRD\\Probe};
     \node (CRDPA) [node distance=5cm, left=of CRDP, text width=8em, node, ellipse, fill=blue!10] {CRD\ PrometheusAgent};
-    \node (UZ) [zone, dashed, fit={(LB) (Prober1) (Prober2) (LBZ) (PO) (PA) (PAZ) (CRDPA) (CRDP)}] {};
+    \node (UZ) [zone, dashed, fit={(LB1) (LB2) (Prober1) (Prober2) (LB1Z) (LB2Z) (PO) (PA) (PAZ) (CRDPA) (CRDP)}] {};
     \node (U) [node distance=6pt, above=of UZ.north west, zonetag, anchor=west] {Active Monitoring Platform};
 
-    \node (TS2) [node distance=10em, below=of Prober2.base, text width=5em, node, fill=green!10] {Target\\Service\ 2};
-    \node (C2Z) [zone, dashed, fit={(TS2)}] {};
-    \node (C2) [node distance=2pt, below=of C2Z, zonetag] {Product B};
-
-    \node (TS1) [node distance=9em, left=of TS2, text width=5em, node, fill=green!10] {Target\\Service\ 1};
+    \node (TS1) [node distance=3cm, below=of Prober1.west, text width=6em, node, fill=green!10] {Target\\Service\ 1};
     \node (C1Z) [zone, dashed, fit={(TS1)}] {};
     \node (C1) [node distance=2pt, below=of C1Z, zonetag] {Product A};
 
-    \node (TR) [node distance=11em, below=of PA.west, text width=6em, node, fill=green!10] {Thanos\\Receive};
+    \node (TS2) [node distance=3cm, below=of Prober2.west, text width=6em, node, fill=green!10] {Target\\Service\ 2};
+    \node (C2Z) [zone, dashed, fit={(TS2)}] {};
+    \node (C2) [node distance=2pt, below=of C2Z, zonetag] {Product B};
+
+    \node (TR) [node distance=3cm, below=of PA.west, text width=6em, node, fill=green!10] {Thanos\\Receive};
     \node (GZ) [zone, dashed, fit={(TR)}] {};
     \node (G) [node distance=2pt, below=of GZ, zonetag] {Amadeus Observability Platform};
 
-    \node (CZ) [zone, fit={(U) (LB) (Prober1) (Prober2) (PO) (PA) (CRDPA) (CRDP) (UZ) (G) (GZ) (TR) (TS1) (TS2) (C1) (C1Z)}] {};
+    \node (CZ) [zone, fit={(U) (LB1) (LB2) (Prober1) (Prober2) (PO) (PA) (CRDPA) (CRDP) (UZ) (G) (GZ) (TR) (TS1) (TS2) (C1) (C1Z)}] {};
     \node (C)[node distance=6pt, above=of CZ.north west, zonetag, anchor=west] {OpenShift Cluster};
 
     \path[->]
@@ -61,22 +65,23 @@ The current system for active monitoring features lightweight scheduling and pro
       (PO) edge node[auto, right] {} (CRDPA)
       (PO) edge node[auto, left] {watch} (CRDP)
       (PA) edge node[auto, right] {remote write} (TR)
-      (PA) edge node[auto, sloped] {scrape} (LB)
-      (LB) edge node[auto] {} (Prober1)
-      (LB) edge node[auto] {} (Prober2)
+      (PA) edge node[auto, sloped] {scrape} (LB1)
+      (PA) edge node[auto, sloped] {scrape} (LB2)
+      (LB1) edge node[auto] {} (Prober1)
+      (LB2) edge node[auto] {} (Prober2)
       (Prober1) edge node[auto] {probe} (TS1)
       (Prober2) edge node[auto] {probe} (TS2);
   \end{tikzpicture}
   \caption[System Design]{System Design with Prometheus Operator, Prometheus Agent and Probers.}\label{fig:system-design}
 \end{figure}
 
-The proposal is based on the container orchestrator like Kubernetes or OpenShift. As for Amadeus, Openshift 4.11 is the most common release installed as individual and independent clusters. Inside the cluster, a slightly modified Prometheus Operator would be installed, responsible for deploying and managing Promenteus Agents and probe configurations. Next, probers, including the Blackbox Exporter and the customized probers like the \ac{TCIL} Pinger, would be deployed with the load balancer, leveraging horizontal scalability for better load distribution. 
+Inside the cluster, a slightly modified Prometheus Operator would be installed, responsible for deploying and managing Promenteus Agents and probe configurations. Next, Blackbox Exporters and customized probers like the \ac{TCIL} Pinger, which is still in development, would be deployed with load balancers, leveraging horizontal scalability for better load distribution. 
 
-Firstly, the deployed Prometheus Operator will monitor the \ac{CRD}s created for deploying Prometheus Agents and probe configurations. It will maintain its state, offering scaling or sharding as required. Subsequently, the Prometheus Agent will handle scheduling probes and remotely transmit metrics to the Prometheus remote endpoint or Thanos Receive.
+At first, the deployed Prometheus Operator will monitor the \ac{CRD}s created for deploying Prometheus Agents and probe configurations. It will maintain its state, offering scaling or sharding as required. Subsequently, the Prometheus Agent will handle scheduling probes and remotely transmit metrics to the Prometheus remote endpoint or Thanos Receive. 
 
 Secondly, deploying probers with the load balancer enables the Prometheus Agent to target the same host, leveraging load distribution and enhancing reliability without extra effort. Additionally, with Kubernetes or OpenShift, the inherent scalability and the ingress or load balancer provide valuable and reliable support, significantly boosting this design. 
 
-Finally, users with active monitoring requirements across various clusters and namespaces can leverage the official \ac{CRD}: Probe to customize their specific requests. In summary, this system architecture, shown in \autoref{fig:system-design}, offers a more efficient, seamlessly integrated, and highly available solution for active monitoring for the Amadeus Observability Platform. 
+Finally, users with active monitoring requirements across various clusters and namespaces can leverage the official \ac{CRD}: Probe to customize their specific requests. In summary, this system architecture offers a more efficient, seamlessly integrated, and highly available solution for active monitoring for the Amadeus Observability Platform. 
 
 \section{System Workflow}
 
@@ -183,9 +188,9 @@ Finally, users with active monitoring requirements across various clusters and n
   \caption[System Workflow - Probe Scheduling]{Scheduling probes by Prometheus Agent.}\label{fig:system-workflow-scheduling}
 \end{figure}
 
-To clearly illustrate the system workflow of this design, three workflows have to be discussed in the following. They are responsible for the maintenance of Prometheus Agent, configuring probe settings, and scheduling probes respectively. 
+Three workflows have to be discussed to illustrate this design's system workflow. They are responsible for maintaining Prometheus Agent, configuring probe settings, and scheduling probes. 
 
-Firstly, for the active monitoring platform's initialization, Prometheus Agent must be deployed by the admin via the official \ac{CRD}: PrometheusAgent. As shown in \autoref{fig:system-workflow-prometheusagent}, the admin creates or updates the \ac{CR} and receives the successful response. Then, the Prometheus Operator that keeps watching the \ac{CR} retrieves the configuration and generates a new template to create or update the deployment of the Prometheus Agent. 
+Firstly, for the active monitoring platform's initialization, the admin must deploy Prometheus Agent via the official \ac{CRD}: PrometheusAgent. As shown in \autoref{fig:system-workflow-prometheusagent}, the admin creates or updates the \ac{CR} and receives the successful response. Then, the Prometheus Operator that keeps watching the \ac{CR} retrieves the configuration and generates a new template to create or update the deployment of the Prometheus Agent. 
 
 Secondly, the workflow to create or modify probe configurations is similar to the above one, as they both leverage the Prometheus Operator for management and execution. In \autoref{fig:system-workflow-probe}, the user utilizes the \ac{CR}: Probe, specifying the target \ac{URL}, scrape interval, and timeout interval, etc. As mentioned above, the Prometheus Operator would take over it, reloading the configuration of Prometheus Agent and bringing about the desired scheduling of probes. 
 

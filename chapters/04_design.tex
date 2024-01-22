@@ -5,8 +5,97 @@
 
 \section{Prometheus Operator}
 
+Prometheus Operator is an open-source tool designed to simplify the deployment, configuration, and management of Prometheus components in the Kubernetes ecosystem. Prometheus has grown in popularity due to its effectiveness in cloud monitoring, making it a cornerstone for developers focusing on reliability and performance. The Prometheus Operator, developed under the support of the \ac{CNCF}, offers cloud deployment and management, aligning seamlessly with the principles and practices of cloud-native computing. 
+
+The primary goal of the Prometheus Operator is to make running Prometheus on the cloud platform as straightforward and efficient as possible. It leverages the container orchestrator's \ac{API}s to offer a scalable and highly available solution that fits the dynamic nature of cloud computing. The operator automates the complex processes of deploying, configuring, and managing Prometheus instances, making it easier for teams that don't have deep expertise in monitoring systems. By introducing \ac{CRD}s representing distinct Prometheus components, such as Alertmanager, PrometheusAgent, and Prometheus itself, the integration lets users define their monitoring requirements with YAML configuration files declaratively. 
+
+Based on the orchestrator's \ac{API}, one of the critical features of the Prometheus Operator is to dynamically discover and manage configurations, such as monitored targets. This dynamic management is crucial in environments where services and workloads constantly change. The operator automates updating Prometheus configurations in response to changes in the cluster, such as adding or removing pods, services, and endpoints. This ensures that monitoring is consistently aligned with the current state of the cluster, providing instant and accurate insights into applications and infrastructure. 
+
+In addition, to enhance the user experience, the Prometheus Operator also supports features like high availability, sharding, etc. To elaborate, for Prometheus and Alertmanager, it is ensured that monitoring and alerting systems remain operational even if individual components fail. For Prometheus Agent, the configuration file is divided into several configurations for multiple agent instances using the hash function, achieving Prometheus Agent sharding for distributing loads. Moreover, the operator also facilitates easy backup and restoration of Prometheus data, integrating with Kubernetes' RBAC model to provide fine-grained access control over monitoring resources. 
+
+In conclusion, the Prometheus Operator enhances cloud monitoring by automating the deployment, configuration, and management of Prometheus. Its dynamic configuration adaptation, high availability, and sharding features increase efficiency and reliability. Therefore, utilizing the Prometheus Operator for robust cloud monitoring solutions in the Amadeus Observability Platform is valuable. 
+
 \section{Prometheus Agent}
 
-\section{Blackbox Exporter}
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+      node/.style={draw, align=center, minimum height=3em, anchor=west}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=west}
+    ]
 
-\section{Amadeus TCIL Prober}
+    \node (CRDP) [node distance=7em, text width=3em, node, ellipse, fill=blue!10, anchor=base] {CRD\\Probe};
+    \node (PO) [node distance=7em, below=of CRDP.base, text width=7em, node, fill=red!10, anchor=base] {Prometheus\\Operator};
+
+    \node (conf1) [node distance=4cm, below=of PO.west, text width=7em, node] {Prometheus Config 1};
+    \node (conf2) [node distance=8em, right=of conf1.east, text width=7em, node] {Prometheus Config 2};
+    \node (PAI1) [node distance=4em, below=of conf1.west, text width=7em, node, fill=red!10] {Prometheus Agent Instance};
+    \node (PAI2) [node distance=4em, below=of conf2.west, text width=7em, node, fill=red!10] {Prometheus Agent Instance};
+
+    \node (PA1Z) [zone, rounded corners, fit={(conf1) (PAI1)}] {};
+    \node (PA1) [node distance=6pt, below=of PA1Z, zonetag] {Prometheus Agent 1};
+    \node (PA2Z) [zone, rounded corners, fit={(conf2) (PAI2)}] {};
+    \node (PA2) [node distance=6pt, below=of PA2Z, zonetag] {Prometheus Agent 2};
+
+    \node (des) [node distance=12em, below=of PA1Z.west, text width=24em, node, dashed, align=left, anchor=west] {The Prometheus Agent achieves sharding on configurations via the "hashmod" relabeling technique. This method involves computing the hash of specified labels, such as URLs. By doing so, the agent could distribute and manage the monitoring load across different instances.};
+
+    \draw[->] (PO) -- node[auto] {watch} (CRDP);
+    \draw[->] (PO) -- node[auto, right, align=center] {generate configurations with\\additional "hashmod" relabeling} (conf1);
+    \draw[->] (PO) -| node[auto, align=center] {} (conf2);
+    \draw[<-] (conf1) -- node[auto] {} (PAI1);
+    \draw[<-] (conf2) -- node[auto] {} (PAI2);
+    \draw[->, dashed] (PA1Z.west) -- +(-1,0) |- (des);
+    \draw[->, dashed] (PA2Z.east) -- +(1,0) |- (des);
+  \end{tikzpicture}
+  \caption[Prometheus Agent Sharding]{Prometheus Agent Sharding Mechanism.}\label{fig:prometheus-agent-sharding}
+\end{figure}
+
+The Prometheus Agent represents a simplified, focused approach to monitoring distributed systems, particularly in large-scale and cloud-native environments. As a lightweight variant of the Prometheus instance, the Prometheus Agent is designed to be a highly efficient data collector optimized for forwarding metrics to the Prometheus server or a compatible remote receiver. 
+
+One of the core advantages of the Prometheus Agent lies in its simplicity. Unlike an entire Prometheus server, which includes data storage, querying, and alerting functionalities, the agent is only responsible for scraping metrics and sending them out. This reduction leads to a smaller memory and CPU footprint, critical in resource-constrained environments, making it ideal for edge computing, microservices architectures, and multi-cluster environments. 
+
+In addition, the Prometheus Agent maintains excellent compatibility with the Prometheus ecosystem. This is a crucial consideration for organizations invested in Prometheus-based monitoring. It can scrape metrics in the same Prometheus exposition format, ensuring users integrate the agent seamlessly into the existing monitoring infrastructure. Furthermore, the agent's ability to integrate with service discovery mechanisms in orchestration platforms ensures its dynamically adapting to changes in the monitored environment. 
+
+Finally, the Prometheus Agent enhances the scalability and reliability of monitoring systems. The Prometheus Agent can achieve more efficient horizontal scaling depending on scrape configurations as shown in \autoref{fig:prometheus-agent-sharding} and focusing on scraping and forwarding metrics. This is particularly beneficial in large-scale environments, where a central Prometheus server can aggregate and process data from multiple agents, reducing duplication of storage and computation. Also, this architecture enhances the resilience of the monitoring system, as the failure of a single agent has a limited impact, ensuring reliable monitoring of the infrastructure. 
+
+Overall, the Prometheus Agent is an inevitable addition to the design of the active monitoring platform, offering a scalable and reliable solution for the existing monitoring system.
+
+\section{Blackbox Exporter and Load Balancing}
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+      node/.style={draw, node distance=3em, text width=4em, minimum height=3em, align=center, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt}
+    ]
+    \node (traffic) [node] {Traffic};
+    \node (route) [node, right=of traffic, text width=7em, fill=red!10] {Route/Ingress};
+    \node (service) [node, right=of route] {Service};
+    \node (pod1) [node, above right=of service] {Pod};
+    \node (pod2) [node, right=of service] {Pod};
+    \node (pod3) [node, below right=of service] {Pod};
+
+    \draw[->] (traffic) -- node[auto] {} (route);
+    \draw[->] (route) -- node[auto] {} (service);
+    \draw[->] (service) -- node[auto] {} (pod1);
+    \draw[->] (service) -- node[auto] {} (pod2);
+    \draw[->] (service) -- node[auto] {} (pod3);
+  \end{tikzpicture}
+  \caption[Openshift Route]{Route is the resource responsible for Load Balancing in Openshift.}\label{fig:openshift-route}
+\end{figure}
+
+Blackbox Exporter, a probing tool for the Prometheus monitoring system, is essential for assessing the performance and availability of services in network environments. It plays an important role in monitoring and diagnosing systems designed for probing endpoints over various protocols like HTTP, HTTPS, DNS, TCP, and ICMP. 
+
+In complex infrastructures with numerous services, integrating Blackbox Exporter with load-balancing solutions like OpenShift Routes or Kubernetes Ingress, as shown in \autoref{fig:openshift-route}, is crucial. The integration facilitates scalable and efficient monitoring, ensuring the monitoring system remains reliable as the number of services grows. 
+
+Moreover, combined with automatic horizontal scaling, resource utilization efficiency could be significantly enhanced. Load balancers optimize traffic flow to the Blackbox Exporter instances; the orchestrator scales the number of the Blackbox Exporter instances, ensuring that the monitoring process does not overuse or run out of resources. 
+
+Another benefit is the high availability and fault tolerance. If an exporter instance fails, the load balancer can redirect traffic to other operational instances, ensuring uninterrupted monitoring. On the other hand, in cloud-native environments where services often change, this setup supports dynamic service discovery natively, reducing the need for manual configuration and simplifying overall management. 
+
+In conclusion, integrating Blackbox Exporter with load-balancing solutions offers enhanced scalable and reliable performance monitoring with simplified management. Load balancers ensure even distribution of monitoring loads, leading to more reliable performance metrics and easier identification of actual issues. This integration is indispensable for efficiently maintaining the health and performance of network services, making it a strategy for enhancing large-scale deployment and management.

@@ -3,10 +3,36 @@
 
 \chapter{Implementation}\label{chapter:implementation}
 
-\section{Porting Prometheus Operator to Amadeus Cloud Service}
+\section{Deployment of the Prometheus Operator}
 
-\subsection{Subsection}
+This section aims to detail the preparations and procedures for the setup of the Prometheus Operator. 
 
-\section{Amadeus TCIL Prober Implementation}
+\subsection{Modifying CRDs of the Prometheus Operator}
 
-\subsection{Subsection}
+\subsection{Rebuilding the Prometheus Operator}
+
+\subsection{Deploying the Prometheus Operator}
+
+\section{Deployment of the Prometheus Agent}
+
+\subsection{Configuration in CRD}
+
+\subsection{Deploying the CRD: PrometheusAgent}
+
+\section{Deployment of the Blackbox Exporter}
+
+\subsection{Load Balancing from the Openshift Route}
+
+\subsection{Deploying via Helm Chart}
+
+\section{Creating Active Monitoring Configurations}
+
+\subsection{Configuration in CRD}
+
+\subsection{Deploying the CRD: Probe}
+
+\section{GitOps for managing CRDs}
+
+\subsection{Creating Git Repository for CRDs}
+
+\subsection{Registering the Repository in Argo CD}
