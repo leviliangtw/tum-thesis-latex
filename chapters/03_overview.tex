@@ -19,7 +19,7 @@ The current system for active monitoring features lightweight scheduling and pro
 
 \section{System Overview}
 
-The suggested design utilizes container orchestrators such as Kubernetes or OpenShift. At Amadeus, the predominant version is the OpenShift 4.11, typically set up as individual and independent clusters. The subsequent section details the system design shown in \autoref{fig:system-design}. 
+The design proposal utilizes container orchestrators, including Kubernetes and OpenShift. Within Amadeus, the OpenShift Container Platform is predominantly employed, often set up as separate and autonomous clusters. The system design described in the upcoming paragraphs is illustrated in \autoref{fig:system-design}. 
 
 \begin{figure}[htpb]
   \centering
@@ -27,7 +27,7 @@ The suggested design utilizes container orchestrators such as Kubernetes or Open
   \begin{tikzpicture}[
       shorten >=1pt,
       zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
-      node/.style={draw, align=center, minimum height=3em, anchor=west}, 
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt, anchor=west}
     ]
 
@@ -90,7 +90,7 @@ Finally, users with active monitoring requirements across various clusters and n
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
     node distance=2cm, auto, >=stealth', shorten >=1pt,
-    node/.style={draw, align=center, minimum height=3em, scale=0.8}, 
+    node/.style={draw, align=center, minimum height=3em, scale=0.8, rounded corners}, 
     ground/.style={node distance=7cm}, 
     description/.style={text width=12em, scale=0.7, above, midway, align=center}, 
     selfloop/.style={text width=12em, scale=0.7, right, near end, align=left}, 
@@ -124,7 +124,7 @@ Finally, users with active monitoring requirements across various clusters and n
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
     node distance=2cm, auto, >=stealth', shorten >=1pt,
-    node/.style={draw, align=center, minimum height=3em, scale=0.8}, 
+    node/.style={draw, align=center, minimum height=3em, scale=0.8, rounded corners}, 
     ground/.style={node distance=7cm}, 
     description/.style={text width=12em, scale=0.7, above, midway, align=center}, 
     selfloop/.style={text width=12em, scale=0.7, right, near end, align=left}, 
@@ -159,7 +159,7 @@ Finally, users with active monitoring requirements across various clusters and n
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
     node distance=2cm, auto, >=stealth', shorten >=1pt,
-    node/.style={draw, align=center, minimum height=3em, scale=0.8}, 
+    node/.style={draw, align=center, minimum height=3em, scale=0.8, rounded corners}, 
     ground/.style={node distance=7cm}, 
     description/.style={text width=12em, scale=0.7, above, midway, align=center}, 
     selfloop/.style={text width=12em, scale=0.7, right, near end, align=left}, 
@@ -204,7 +204,7 @@ Lastly, the third workflow is fully automatic, carrying out probes over differen
   \begin{tikzpicture}[
       shorten >=1pt,
       zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily, anchor=west},
-      node/.style={draw, align=center, minimum height=3em, anchor=west}, 
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt, anchor=base}
     ]
 

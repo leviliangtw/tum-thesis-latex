@@ -17,7 +17,7 @@ Black box monitoring is a well-established approach to system analysis, commonly
     % This should probably go into a file in figures/
     \begin{tikzpicture}[shorten >=1pt, node distance=3cm, auto]
       \node (R0) {Input};
-      \node (R1) [right of=R0, minimum height=7em, text width=7em, align=center, draw] {Application\\(Black\ Box)};
+      \node (R1) [right of=R0, minimum height=7em, text width=7em, align=center, draw, rounded corners] {Application\\(Black\ Box)};
       \node (R2) [right of=R1] {Output};
       \path[->]
         (R0) edge node {} (R1)
@@ -28,7 +28,7 @@ Black box monitoring is a well-established approach to system analysis, commonly
 
 Active monitoring and black box monitoring share some similar features but embody distinct concepts. Both involve simulating requests to target \ac{API}s or other endpoints, such as those of \ac{TCP}, \ac{HTTP}, or other customized protocols. Specifically, These symptom-oriented techniques mimic user behavior, thereby reflecting real issues~\parencite{beyerSiteReliabilityEngineering2016}. By definition, active monitoring can encompass black box monitoring but focuses on different aspects. Active monitoring emphasizes proactive check-ups, actively testing and querying systems, while black box monitoring is more of an observational approach, focusing on the outcomes and behaviors of systems without delving into their internal mechanics. In summary, despite of slight difference, both methods are valuable in system monitoring and could contribute to the comprehensive view of system health and performance. 
 
-In system monitoring, the "Four Golden Signals" are essential: Latency, Traffic, Errors, and Saturation. Latency signifies response times, differentiating between successful and failed requests. Traffic gauges demand, such as HTTP requests per second. Errors identify the rate of failures, whether explicit, implicit, or policy-driven. Saturation looks at resource utilization and potential bottlenecks~\parencite{beyerSiteReliabilityEngineering2016}. Bridging these metrics, active monitoring proactively tests systems for performance and reliability, while black box monitoring observes system behavior without internal visibility. The combination enhanced the effectiveness of the "Four Golden Signals," ensuring comprehensive system monitoring and optimal system performance.
+In system monitoring, the "Four Golden Signals" are essential: Latency, Traffic, Errors, and Saturation. Latency signifies response times, differentiating between successful and failed requests. Traffic gauges demand, such as \ac{HTTP} requests per second. Errors identify the rate of failures, whether explicit, implicit, or policy-driven. Saturation looks at resource utilization and potential bottlenecks~\parencite{beyerSiteReliabilityEngineering2016}. Bridging these metrics, active monitoring proactively tests systems for performance and reliability, while black box monitoring observes system behavior without internal visibility. The combination enhanced the effectiveness of the "Four Golden Signals," ensuring comprehensive system monitoring and optimal system performance.
 
 As the IT landscape becomes more complex with microservices and cloud-based applications, understanding the internals of every service can be overwhelming. In such a scenario, active monitoring and black box monitoring's ability to provide a holistic view of system behavior can be highly beneficial. Moreover, in light of growing privacy regulations and data protection measures, the non-invasive approach aligns with the current trends. Simulating test inputs and focusing on system outputs rather than internals could minimize privacy or data protection concerns. 
 
@@ -46,7 +46,7 @@ The Prometheus Agent is a specialized mode of a standard Prometheus instance aim
     \begin{tikzpicture}[
         shorten >=1pt,
         zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
-        node/.style={draw, align=center, minimum height=3em, anchor=west}, 
+        node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
         zone/.style={draw=black!60, inner sep=8pt}
       ]
 
@@ -70,9 +70,9 @@ The Prometheus Agent is a specialized mode of a standard Prometheus instance aim
     \caption[Prometheus Agent]{Prometheus Agent with scrape and remote write.}\label{fig:prometheus-agent}
 \end{figure}
 
-The Blackbox Exporter, an essential element of the Prometheus toolkit, is designed to probe external endpoints across multiple protocols, including HTTP/HTTPS, TCP, and ICMP. This capability is fundamental to black box monitoring, enabling the assessment of system health and performance from an external viewpoint without necessitating internal access to the monitored system~\parencite{prometheusBlackboxExporter2023}. The Blackbox Exporter is instrumental in situations where internal monitoring is either not feasible or insufficient, such as in third-party services or in environments where internal metrics are not available or reliable.
+The Blackbox Exporter, an essential element of the Prometheus toolkit, is designed to probe external endpoints across multiple protocols, including \ac{HTTP}/\ac{HTTPS}, \ac{TCP}, and \ac{ICMP}. This capability is fundamental to black box monitoring, enabling the assessment of system health and performance from an external viewpoint without necessitating internal access to the monitored system~\parencite{prometheusBlackboxExporter2023}. The Blackbox Exporter is instrumental in situations where internal monitoring is either not feasible or insufficient, such as in third-party services or in environments where internal metrics are not available or reliable.
 
-Integrating the Prometheus Agent with the Blackbox Exporter fosters a distributed scheduler-executor architecture. This approach allows for a more granular and distributed monitoring framework, which is highly adaptable and can be effectively implemented across various platforms as service (PaaS) clusters with latencies~\parencite{prometheusUnderstandingUsingMultitarget}. Such an architecture bolsters the scalability and resilience of the monitoring system, rendering it suitable for large-scale and intricate environments. This distributed nature enhances the system's ability to scale and ensures a more resilient monitoring setup capable of withstanding node failures and network partitions~\parencite{prometheusIntroducingPrometheusAgent}.
+Integrating the Prometheus Agent with the Blackbox Exporter fosters a distributed scheduler-executor architecture. This approach allows for a more granular and distributed monitoring framework, which is highly adaptable and can be effectively implemented across various \ac{PaaS} clusters with latencies~\parencite{prometheusUnderstandingUsingMultitarget}. Such an architecture bolsters the scalability and resilience of the monitoring system, rendering it suitable for large-scale and intricate environments. This distributed nature enhances the system's ability to scale and ensures a more resilient monitoring setup capable of withstanding node failures and network partitions~\parencite{prometheusIntroducingPrometheusAgent}.
 
 Achieving optimal availability and scalability with the Prometheus Agent and Blackbox Exporter needs additional configuration and management. For the Prometheus Agent, employing relabeling is a crucial horizontal scaling or sharding strategy~\parencite{prometheusHowRelabelingPrometheus}. This method distributes the workload across multiple Prometheus Agent instances with a hidden label with hashed value, augmenting the system's capacity to handle substantial data volumes efficiently. Regarding the Blackbox Exporter, scalability is further enhanced by integrating a load balancer with properly configured scaling parameters, ensuring an even distribution of the probing load and maintaining system performance, even under high demand~\parencite{prometheusIntroducingPrometheusAgent}.
 
@@ -90,14 +90,14 @@ The Operator Pattern extends Kubernetes' native capabilities by introducing the 
     \begin{tikzpicture}[
         shorten >=1pt,
         zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
-        node/.style={draw, align=center, minimum height=3em}, 
+        node/.style={draw, align=center, minimum height=3em, rounded corners}, 
         zone/.style={draw=black!60}
       ]
 
       \node (EE) at(0, 0) [node, text width=5em] {External\ Events};
       \node (CS) [node distance=3em, below=of EE, text width=5em, node] {Current\ State};
       \node (CR) [node distance=3em, below=of CS, text width=5em, node] {Custom\ Resource};
-      \node (C) [node distance=9em, right=of CS, text width=5em, ellipse, node] {Controller};
+      \node (C) [node distance=9em, right=of CS, circle, node] {Controller};
       \node (DS) [node distance=12em, right of=C, text width=5em, node] {Desired\ State};
   
       \path[->]

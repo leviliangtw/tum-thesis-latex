@@ -23,7 +23,7 @@ In conclusion, the Prometheus Operator enhances cloud monitoring by automating t
   \begin{tikzpicture}[
       shorten >=1pt,
       zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
-      node/.style={draw, align=center, minimum height=3em, anchor=west}, 
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt, anchor=west}
     ]
 
@@ -70,32 +70,34 @@ Overall, the Prometheus Agent is an inevitable addition to the design of the act
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
       shorten >=1pt,
-      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+      zonetag/.style={align=center, node distance=1em, font=\fontsize{10}{10}\color{black!60}\ttfamily},
       node/.style={draw, node distance=3em, text width=4em, minimum height=3em, align=center, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt}
     ]
     \node (traffic) [node] {Traffic};
-    \node (route) [node, right=of traffic, text width=7em, fill=red!10] {Route/Ingress};
-    \node (service) [node, right=of route] {Service};
-    \node (pod1) [node, above right=of service] {Pod};
-    \node (pod2) [node, right=of service] {Pod};
-    \node (pod3) [node, below right=of service] {Pod};
+    \node (l7) [node, right=of traffic, text width=8em, fill=red!10] {Load Balancer/\\Ingress/Route};
+    \node (l7tag) [zonetag, above=of l7] {Layer 7};
+    \node (l34) [node, right=of l7, text width=4em, fill=red!10] {Service};
+    \node (l34tag) [zonetag, above=of l34] {Layer 3/4};
+    \node (pod1) [node, above right=of l34] {Pod};
+    \node (pod2) [node, right=of l34] {Pod};
+    \node (pod3) [node, below right=of l34] {Pod};
 
-    \draw[->] (traffic) -- node[auto] {} (route);
-    \draw[->] (route) -- node[auto] {} (service);
-    \draw[->] (service) -- node[auto] {} (pod1);
-    \draw[->] (service) -- node[auto] {} (pod2);
-    \draw[->] (service) -- node[auto] {} (pod3);
+    \draw[->] (traffic) -- node[auto] {} (l7);
+    \draw[->] (l7) -- node[auto] {} (l34);
+    \draw[->] (l34) -- node[auto] {} (pod1);
+    \draw[->] (l34) -- node[auto] {} (pod2);
+    \draw[->] (l34) -- node[auto] {} (pod3);
   \end{tikzpicture}
   \caption[Openshift Route]{Route is the resource responsible for Load Balancing in Openshift.}\label{fig:openshift-route}
 \end{figure}
 
-Blackbox Exporter, a probing tool for the Prometheus monitoring system, is essential for assessing the performance and availability of services in network environments. It plays an important role in monitoring and diagnosing systems designed for probing endpoints over various protocols like HTTP, HTTPS, DNS, TCP, and ICMP. 
+Blackbox Exporter, a probing tool for the Prometheus monitoring system, is essential for assessing the performance and availability of services in network environments. It plays an important role in monitoring and diagnosing systems designed for probing endpoints over various protocols like \ac{HTTP}/\ac{HTTPS}, \ac{DNS}, \ac{TCP}, and \ac{ICMP}. 
 
-In complex infrastructures with numerous services, integrating Blackbox Exporter with load-balancing solutions like OpenShift Routes or Kubernetes Ingress, as shown in \autoref{fig:openshift-route}, is crucial. The integration facilitates scalable and efficient monitoring, ensuring the monitoring system remains reliable as the number of services grows. 
+In complex infrastructures hosting multiple services, it is crucial to integrate the Blackbox Exporter with Layer 7 load-balancing solutions such as built-in Load Balancers, OpenShift Routes, Kubernetes Ingress, or Layer 3 and 4 solutions like the Service, as depicted in Figure \autoref{fig:openshift-route}. This integration enables scalable and efficient monitoring, ensuring the reliability of the monitoring system as the service count increases. 
 
 Moreover, combined with automatic horizontal scaling, resource utilization efficiency could be significantly enhanced. Load balancers optimize traffic flow to the Blackbox Exporter instances; the orchestrator scales the number of the Blackbox Exporter instances, ensuring that the monitoring process does not overuse or run out of resources. 
 
 Another benefit is the high availability and fault tolerance. If an exporter instance fails, the load balancer can redirect traffic to other operational instances, ensuring uninterrupted monitoring. On the other hand, in cloud-native environments where services often change, this setup supports dynamic service discovery natively, reducing the need for manual configuration and simplifying overall management. 
 
-In conclusion, integrating Blackbox Exporter with load-balancing solutions offers enhanced scalable and reliable performance monitoring with simplified management. Load balancers ensure even distribution of monitoring loads, leading to more reliable performance metrics and easier identification of actual issues. This integration is indispensable for efficiently maintaining the health and performance of network services, making it a strategy for enhancing large-scale deployment and management.
+In conclusion, integrating the Blackbox Exporter with load-balancing solutions enhances scalability and reliability in performance monitoring, simplifying management. Load balancing evenly distributes monitoring loads, leading to more accurate performance metrics and easier issue identification. This integration is essential for effective maintenance of network services, crucial in large-scale deployment and management.
