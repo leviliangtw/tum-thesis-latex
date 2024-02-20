@@ -106,21 +106,7 @@ In container orchestrators, Service for load balancing is optimal when Layer 7 f
 
 \begin{enumerate}
     \item \textbf{Create the Service Resource for the Blackbox Exporter:}
-    Define a Service resource for the Blackbox Exporter. This Service will route traffic to the selected pods. Here is an example configuration:
-    \begin{verbatim}
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: blackbox-exporter-service
-    spec:
-      selector:
-      app: blackbox-exporter
-      ports:
-        - protocol: TCP
-          port: 80
-          targetPort: 9115
-      type: ClusterIP
-    \end{verbatim}
+    Define a Service resource for the Blackbox Exporter. This Service will route traffic to the selected pods. 
     \item \textbf{Check the Connectivity of the Service Resource:}
     Once the Service is created, it gets assigned a ClusterIP and a DNS record within the cluster. Check the connectivity to this DNS record to ensure that the Service is accessible. You can do this by running a DNS lookup or a simple curl command from a pod within the same cluster: 
     \begin{verbatim}
@@ -139,28 +125,7 @@ The \ac{HPA} boosts elasticity and cost efficiency by enabling dynamic adjustmen
     \item \textbf{Ensure the Metrics Server:}
     The \ac{HPA} requires metric data to make scaling decisions. Ensure that the Metrics Server responsible for collecting resource usage data is deployed in the cluster. 
     \item \textbf{Create the \ac{HPA} Resource:}
-    Define an \ac{HPA} resource in YAML format. Specify the deployment to scale, the metrics to be used for decisions, and the desired target values for those metrics. Here is an example:
-    \begin{verbatim}
-    apiVersion: autoscaling/v2
-    kind: HorizontalPodAutoscaler
-    metadata:
-      name: blackbox-exporter-hpa
-    spec:
-      scaleTargetRef:
-        apiVersion: apps/v1
-        kind: Deployment
-        name: blackbox-exporter
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-        resource:
-          name: cpu
-          target:
-            type: Utilization
-            averageUtilization: 75
-    \end{verbatim}
-    This \ac{HPA} targets the "blackbox-exporter" deployment, with a minimum of 1 replica and a maximum of 10, scaling up when the average CPU utilization exceeds 75\%.
+    Define an \ac{HPA} resource in YAML format. Specify the deployment to scale, the metrics to be used for decisions, and the desired target values for those metrics. 
     \item \textbf{Apply the \ac{HPA} Configuration:}
     Apply the \ac{HPA} configuration to your Kubernetes cluster. 
     \item \textbf{Adjust \ac{HPA} Parameters:}

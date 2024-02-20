@@ -3,6 +3,528 @@
 
 \chapter{Evaluation}\label{chapter:evaluation}
 
-\section{Section}
+This evaluation study seeks to determine if the design leads to a tolerable overhead compared to the original in-house monitoring application that Amadeus developed. Both applications operate on a private OpenShift Cluster managed by the Amadeus \ac{SRE} team. The primary metrics collected include Openshift Metrics for \ac{CPU}, memory, and network, gathered using cAdvisor or the Network Metrics Daemon~\parencite{redhatAssociatingSecondaryInterfaces}~\parencite{redhatPrometheusClusterMonitoring}. Subsequent sections will outline the evaluation methodology and present the findings from the system analysis.
 
-\subsection{Subsection}
+
+\section{Methodology}
+
+The evaluation focuses on analyzing system behaviors concerning \ac{CPU} utilization, memory utilization, and network traffic. These three entities are critical for developers to gain insights into system overhead and performance intuitively. Understanding how a system allocates and utilizes its resources, along with how it communicates internally and externally, provides a comprehensive view of its efficiency and scalability.
+
+\subsection{\ac{CPU} Utilization}
+
+For \ac{CPU} utilization analysis within a pod, the metric "container\_cpu\_usage\_seconds\_total" will be utilized. This metric measures the cumulative \ac{CPU} time consumed by a container in seconds. The methodology involves:
+
+\begin{itemize}
+    \item Collecting \ac{CPU} usage data over time to understand the baseline and peak \ac{CPU} utilization patterns.
+    \item Analyzing the \ac{CPU} consumption in correlation with different applications to identify any potential inefficiencies.
+    \item Comparing \ac{CPU} utilization across different applications to assess resource allocation effectiveness.
+\end{itemize}
+
+This analysis will help in understanding the \ac{CPU} demands of the applications running in OpenShift Pods and how effectively \ac{CPU} resources are utilized.
+
+\subsection{Memory Utilization}
+
+Memory utilization will be assessed using the "container\_memory\_working\_set\_bytes" metric, which provides the amount of memory actively used by a container, excluding unused pages. The evaluation methodology includes:
+
+\begin{itemize}
+    \item Monitoring the working set memory to identify memory usage under different operational conditions.
+    \item Investigating memory patterns to ensure that applications operate appropriately and efficiently use memory resources.
+    \item Evaluating memory usage trends over time to evaluate resource requirements. 
+\end{itemize}
+
+This evaluation aims to highlight memory utilization efficiency and potential areas for optimization within the OpenShift environment.
+
+\subsection{Network I/O}
+
+Network I/O will be analyzed through "container\_network\_receive\_bytes\_total" and "container\_network\_transmit\_bytes\_total" metrics, representing the total bytes received and transmitted by the container network interface, respectively. The methodology involves:
+
+\begin{itemize}
+    \item Monitoring inbound and outbound network traffic to identify communication patterns.
+    \item Assessing network traffic volume in relation to application activity.
+    \item Analyzing network traffic trends to assess data flow efficiency.
+\end{itemize}
+
+By examining network I/O, we aim to understand the network performance and efficiency of applications running in OpenShift Pods, highlighting areas for network optimization.
+
+\section{System Analysis}
+
+Prometheus' and Amadeus's solutions feature a similar architecture: the scheduler triggers the prober to carry out monitoring tasks while the prober probes targets. The forthcoming analysis will span 12 hours, focusing on the average hourly values of each metric. Given that the target count is nearing 100, the following analysis will distinctly address both the scheduler and the prober, specifically within the scenario of probing 100 targets. 
+
+\subsection{Scheduler Analysis}
+
+\begin{figure}[htpb]
+    \centering
+    \pgfplotstableset{col sep=&, row sep=\\}
+    % This should probably go into a file in data/
+    \pgfplotstableread{
+      a & b    \\
+      1 & 4.27 \\
+      2 & 4.19 \\
+      3 & 4.16 \\
+      4 & 4.18 \\
+      5 & 4.23 \\
+      6 & 4.23 \\
+      7 & 4.27 \\
+      8 & 4.23 \\
+      9 & 4.19 \\
+      10 & 4.23 \\
+      11 & 4.21 \\
+      12 & 4.25 \\
+    }\cpuA
+    \pgfplotstableread{
+      a & b    \\
+      1 & 2.32 \\
+      2 & 2.31 \\
+      3 & 2.30 \\
+      4 & 2.49 \\
+      5 & 2.49 \\
+      6 & 2.56 \\
+      7 & 2.71 \\
+      8 & 2.62 \\
+      9 & 2.64 \\
+      10 & 2.60 \\
+      11 & 2.58 \\
+      12 & 2.62 \\
+    }\cpuB
+    \pgfplotstableread{
+      a & b    \\
+      1 & 123 \\
+      2 & 124 \\
+      3 & 123 \\
+      4 & 123 \\
+      5 & 123 \\
+      6 & 124 \\
+      7 & 124 \\
+      8 & 124 \\
+      9 & 125 \\
+      10 & 124 \\
+      11 & 125 \\
+      12 & 125 \\
+    }\memA
+    \pgfplotstableread{
+      a & b    \\
+      1 & 267 \\
+      2 & 267 \\
+      3 & 267 \\
+      4 & 267 \\
+      5 & 267 \\
+      6 & 267 \\
+      7 & 267 \\
+      8 & 267 \\
+      9 & 267 \\
+      10 & 267 \\
+      11 & 267 \\
+      12 & 267 \\
+    }\memB
+    \pgfplotstableread{
+      a & b    \\
+      1 & 3.26 \\
+      2 & 3.26 \\
+      3 & 3.25 \\
+      4 & 3.25 \\
+      5 & 3.26 \\
+      6 & 3.25 \\
+      7 & 3.25 \\
+      8 & 3.26 \\
+      9 & 3.26 \\
+      10 & 3.25 \\
+      11 & 3.27 \\
+      12 & 3.26 \\
+    }\netinA
+    \pgfplotstableread{
+      a & b    \\
+      1 & 2.04 \\
+      2 & 2.03 \\
+      3 & 2.03 \\
+      4 & 2.04 \\
+      5 & 2.06 \\
+      6 & 2.05 \\
+      7 & 2.04 \\
+      8 & 2.04 \\
+      9 & 2.04 \\
+      10 & 2.05 \\
+      11 & 2.06 \\
+      12 & 2.04 \\
+    }\netinB
+    \pgfplotstableread{
+      a & b    \\
+      1 & 3.28 \\
+      2 & 3.28 \\
+      3 & 3.27 \\
+      4 & 3.27 \\
+      5 & 3.28 \\
+      6 & 3.27 \\
+      7 & 3.27 \\
+      8 & 3.28 \\
+      9 & 3.27 \\
+      10 & 3.27 \\
+      11 & 3.29 \\
+      12 & 3.27 \\
+    }\netoutA
+    \pgfplotstableread{
+      a & b    \\
+      1 & 9.51 \\
+      2 & 9.50 \\
+      3 & 9.39 \\
+      4 & 9.55 \\
+      5 & 9.55 \\
+      6 & 9.53 \\
+      7 & 9.49 \\
+      8 & 9.54 \\
+      9 & 9.54 \\
+      10 & 9.57 \\
+      11 & 9.58 \\
+      12 & 9.52 \\
+    }\netoutB
+    % This should probably go into a file in figures/
+    \scalebox{.85}{\begin{tabular}{ c c }
+        \begin{tikzpicture}
+            \begin{axis}[
+              ymin=0,
+              grid,
+              thick,
+              ylabel=CPU (m),
+              xlabel=Time (hour),
+              legend columns=-1,
+              legend style={legend pos=south east},
+              legend cell align={left}, 
+              legend to name=scheduler-analysis
+              ]
+              \addplot[mark=*, blue] table[x=a, y=b]{\cpuA};
+              \addplot[mark=x, red] table[x=a, y=b]{\cpuB};
+              \addlegendentry{Prometheus Agent\ \ \ \ };
+              \addlegendentry{Amadeus' Scheduler};
+            \end{axis}
+        \end{tikzpicture} &
+        \begin{tikzpicture}
+            \begin{axis}[
+                ymin=0,
+                grid,
+                thick,
+                ylabel=Memory (MB),
+                xlabel=Time (hour)
+              ]
+              \addplot[mark=*, blue] table[x=a, y=b]{\memA};
+              \addplot[mark=x, red] table[x=a, y=b]{\memB};
+            \end{axis}
+        \end{tikzpicture} \\ 
+        \begin{tikzpicture}
+            \begin{axis}[
+                ymin=0,
+                grid,
+                thick,
+                ylabel=Network In (kB/s),
+                xlabel=Time (hour)
+              ]
+              \addplot[mark=*, blue] table[x=a, y=b]{\netinA};
+              \addplot[mark=x, red] table[x=a, y=b]{\netinB};
+            \end{axis}
+          \end{tikzpicture} &
+          \begin{tikzpicture}
+            \begin{axis}[
+                ymin=0,
+                grid,
+                thick,
+                ylabel=Network Out (kB/s),
+                xlabel=Time (hour)
+              ]
+              \addplot[mark=*, blue] table[x=a, y=b]{\netoutA};
+              \addplot[mark=x, red] table[x=a, y=b]{\netoutB};
+            \end{axis}
+          \end{tikzpicture}  
+    \end{tabular}}
+    \scalebox{.85}{\ref{scheduler-analysis}}
+    \caption[Scheduler Analysis]{Scheduler analysis.}\label{fig:scheduler-analysis}
+\end{figure}
+
+The Prometheus Agent and Amadeus' Scheduler perform similar roles but differ in their implementations, with the Prometheus Agent providing additional features. As depicted in the \autoref{fig:scheduler-analysis}, the CPU utilization of both schedulers is nearly identical, a result of the minor units in the measurement. Surprisingly, memory utilization by the Prometheus Agent was significantly reduced by approximately 140 MB. Regarding network I/O, given that the measurements are in kB, the differences are relatively inconsequential. In summary, adopting the Prometheus Agent results in an acceptable overhead while substantially decreasing memory consumption. 
+
+\subsection{Prober Analysis}
+
+\begin{figure}[htpb]
+  \centering
+  \pgfplotstableset{col sep=&, row sep=\\}
+  % This should probably go into a file in data/
+  \pgfplotstableread{
+    a & b    \\
+    1 & 16.6 \\
+    2 & 16.7 \\
+    3 & 16.8 \\
+    4 & 16.9 \\
+    5 & 16.8 \\
+    6 & 16.9 \\
+    7 & 16.7 \\
+    8 & 16.8 \\
+    9 & 17.1 \\
+    10 & 16.9 \\
+    11 & 17.0 \\
+    12 & 16.9 \\
+  }\cpuA
+  \pgfplotstableread{
+    a & b    \\
+    1 & 5.82 \\
+    2 & 5.92 \\
+    3 & 5.87 \\
+    4 & 5.91 \\
+    5 & 5.91 \\
+    6 & 5.89 \\
+    7 & 5.91 \\
+    8 & 5.95 \\
+    9 & 5.99 \\
+    10 & 5.84 \\
+    11 & 5.97 \\
+    12 & 5.94 \\
+  }\cpuB
+  \pgfplotstableread{
+    a & b    \\
+    1 & 43.6 \\
+    2 & 43.4 \\
+    3 & 43.4 \\
+    4 & 43.3 \\
+    5 & 43.5 \\
+    6 & 43.5 \\
+    7 & 43.5 \\
+    8 & 43.5 \\
+    9 & 44.0 \\
+    10 & 43.8 \\
+    11 & 44.0 \\
+    12 & 44.1 \\
+  }\memA
+  \pgfplotstableread{
+    a & b    \\
+    1 & 297 \\
+    2 & 297 \\
+    3 & 297 \\
+    4 & 297 \\
+    5 & 297 \\
+    6 & 297 \\
+    7 & 297 \\
+    8 & 297 \\
+    9 & 297 \\
+    10 & 297 \\
+    11 & 297 \\
+    12 & 297 \\
+  }\memB
+  \pgfplotstableread{
+    a & b    \\
+    1 & 30.1 \\
+    2 & 30.1 \\
+    3 & 30.1 \\
+    4 & 30.1 \\
+    5 & 30.0 \\
+    6 & 30.1 \\
+    7 & 30.1 \\
+    8 & 30.2 \\
+    9 & 30.2 \\
+    10 & 30.1 \\
+    11 & 30.1 \\
+    12 & 30.2 \\
+  }\netinA
+  \pgfplotstableread{
+    a & b    \\
+    1 & 13.5 \\
+    2 & 13.5 \\
+    3 & 13.5 \\
+    4 & 13.5 \\
+    5 & 13.5 \\
+    6 & 13.5 \\
+    7 & 13.3 \\
+    8 & 13.3 \\
+    9 & 13.5 \\
+    10 & 13.5 \\
+    11 & 13.5 \\
+    12 & 13.5 \\
+  }\netinB
+  \pgfplotstableread{
+    a & b    \\
+    1 & 11.2 \\
+    2 & 11.2 \\
+    3 & 11.3 \\
+    4 & 11.3 \\
+    5 & 11.2 \\
+    6 & 11.3 \\
+    7 & 11.3 \\
+    8 & 11.3 \\
+    9 & 11.3 \\
+    10 & 11.3 \\
+    11 & 11.3 \\
+    12 & 11.3 \\
+  }\netoutA
+  \pgfplotstableread{
+    a & b    \\
+    1 & 9.79 \\
+    2 & 9.78 \\
+    3 & 9.76 \\
+    4 & 9.78 \\
+    5 & 9.78 \\
+    6 & 9.79 \\
+    7 & 9.61 \\
+    8 & 9.62 \\
+    9 & 9.78 \\
+    10 & 9.77 \\
+    11 & 9.78 \\
+    12 & 9.76 \\
+  }\netoutB
+  % This should probably go into a file in figures/
+  \scalebox{.85}{\begin{tabular}{ c c }
+      \begin{tikzpicture}
+          \begin{axis}[
+              ymin=0,
+              grid,
+              thick,
+              ylabel=CPU (m),
+              xlabel=Time (hour),
+              legend columns=-1,
+              legend style={legend pos=south east},
+              legend cell align={left}, 
+              legend to name=prober-analysis,
+            ]
+            \addplot[mark=*, blue] table[x=a, y=b]{\cpuA};
+            \addplot[mark=x, red] table[x=a, y=b]{\cpuB};
+            \addlegendentry{Blackbox Exporter\ \ \ \ };
+            \addlegendentry{Amadeus' HTTP Prober};
+          \end{axis}
+      \end{tikzpicture} &
+      \begin{tikzpicture}
+          \begin{axis}[
+              ymin=0,
+              grid,
+              thick,
+              ylabel=Memory (MB),
+              xlabel=Time (hour),
+            ]
+            \addplot[mark=*, blue] table[x=a, y=b]{\memA};
+            \addplot[mark=x, red] table[x=a, y=b]{\memB};
+          \end{axis}
+      \end{tikzpicture} \\ 
+      \begin{tikzpicture}
+          \begin{axis}[
+              ymin=0,
+              legend style={legend pos=south east},
+              grid,
+              thick,
+              ylabel=Network In (kB/s),
+              xlabel=Time (hour),
+              legend cell align={left}
+            ]
+            \addplot[mark=*, blue] table[x=a, y=b]{\netinA};
+            \addplot[mark=x, red] table[x=a, y=b]{\netinB};
+          \end{axis}
+        \end{tikzpicture} &
+      \begin{tikzpicture}
+        \begin{axis}[
+            ymin=0,
+            grid,
+            thick,
+            ylabel=Network Out (kB/s),
+            xlabel=Time (hour),
+          ]
+          \addplot[mark=*, blue] table[x=a, y=b]{\netoutA};
+          \addplot[mark=x, red] table[x=a, y=b]{\netoutB};
+        \end{axis}
+      \end{tikzpicture}
+  \end{tabular}}
+  \scalebox{.85}{\ref{prober-analysis}}
+  \caption[Prober Analysis]{Prober analysis.}\label{fig:prober-analysis}
+\end{figure}
+
+The Blackbox Exporter, capable of conducting customized probes across different protocols, contrasts with Amadeus' HTTP Prober's limitation to only HTTP probes. For a fair comparison, only the HTTP module is used in the Blackbox Exporter. \autoref{fig:prober-analysis} shows the Blackbox Exporter's CPU usage is slightly higher than Amadeus' by about 10m, a minor increase justified by its extended features and considered acceptable. Notably, it also offers a substantial memory usage improvement of approximately 250 MB. Although its network input is double that of its counterpart, investigations reveal this is due to the Prometheus Agent's more detailed HTTP GET requests, which are not expected to cause issues, even when scaling up to 10 or 100 times the number of targets due to the lightweight nature of these requests. In summary, the minor increases in CPU and network input by the Blackbox Exporter are more than compensated for by considerable memory savings, making it a fully acceptable solution. 
+
+\subsection{Scraping Analysis}
+
+This analysis evaluates the effectiveness of the Prometheus Agent's scraping strategy. Unlike Amadeus' Scheduler, which does not evenly distribute requests over time, the Prometheus Agent spreads scrapings uniformly across the time interval. Theoretically, this approach results in peak traffic at the start of each interval for Amadeus' Scheduler, while the Prometheus Agent achieves a more balanced load distribution. The subsequent figure presents the outcome of monitoring the Network In of the Prober—primarily influenced by the Scheduler's requests—over a 30-minute period:
+
+\begin{figure}[htpb]
+  \centering
+  \pgfplotstableset{col sep=&, row sep=\\}
+  % This should probably go into a file in data/
+  \pgfplotstableread{
+    a & b    \\
+    1 & 33.7 \\
+    2 & 39.8 \\
+    3 & 30.8 \\
+    4 & 27.1 \\
+    5 & 28.4 \\
+    6 & 32.1 \\
+    7 & 32.1 \\
+    8 & 32.3 \\
+    9 & 25.4 \\
+    10 & 19.3 \\
+    11 & 30.4 \\
+    12 & 41.7 \\
+    13 & 31.6 \\
+    14 & 22.4 \\
+    15 & 40.4 \\
+    16 & 18.1 \\
+    17 & 30.7 \\
+    18 & 39.5 \\
+    19 & 30.6 \\
+    20 & 22.7 \\
+    21 & 31.2 \\
+    22 & 36.4 \\
+    23 & 25.7 \\
+    24 & 23.1 \\
+    25 & 33.6 \\
+    26 & 29.3 \\
+    27 & 31.1 \\
+    28 & 40.4 \\
+    29 & 14.6 \\
+    30 & 43.0 \\
+  }\netinA
+  \pgfplotstableread{
+    a & b    \\
+    1 & 32.1 \\
+    2 & 0 \\
+    3 & 26.8 \\
+    4 & 0 \\
+    5 & 26.8 \\
+    6 & 0 \\
+    7 & 26.7 \\
+    8 & 0 \\
+    9 & 26.7 \\
+    10 & 0 \\
+    11 & 26.7 \\
+    12 & 0 \\
+    13 & 26.8 \\
+    14 & 0 \\
+    15 & 26.8 \\
+    16 & 0 \\
+    17 & 26.8 \\
+    18 & 0 \\
+    19 & 26.8 \\
+    20 & 0 \\
+    21 & 26.8 \\
+    22 & 0 \\
+    23 & 26.8 \\
+    24 & 0 \\
+    25 & 26.7 \\
+    26 & 0 \\
+    27 & 26.7 \\
+    28 & 0 \\
+    29 & 26.8 \\
+    30 & 0 \\
+  }\netinB
+  % This should probably go into a file in figures/
+  \scalebox{.85}{\begin{tikzpicture}
+    \begin{axis}[
+        ymin=0,
+        legend style={legend pos=south east},
+        grid,
+        thick,
+        ylabel=Net In (kB/s),
+        xlabel=Time (min)
+      ]
+      \addplot[mark=*, blue] table[x=a, y=b]{\netinA};
+      \addplot[mark=x, red] table[x=a, y=b]{\netinB};
+      \addlegendentry{Net In - Blackbox Exporter};
+      \addlegendentry{Net In - Amadeus' Prober};
+    \end{axis}
+  \end{tikzpicture}}
+  \caption[Scrape Analysis]{Scrape Analysis.}\label{fig:scrape-analysis}
+\end{figure}
+
+As demonstrated in the \autoref{fig:scrape-analysis}, it is evident that the Blackbox Exporter experiences a more evenly distributed load of requests, in contrast to Amadeus' Prober, which exhibits saw-tooth traffic patterns. This observation suggests that the Prometheus Agent's scraping strategy results in more optimized and evenly balanced network traffic.
+
+
+
+
