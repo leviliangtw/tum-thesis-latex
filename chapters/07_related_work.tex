@@ -3,28 +3,101 @@
 
 \chapter{Related Work}\label{chapter:related_work}
 
-\section{Amadeus' Solution for Black Box Monitoring}
+Modern IT infrastructure management, monitoring, and analytics platforms ensure system reliability and performance. Some industries design and customize their solution, like Amadeus, while some employ mature existing commercial solutions. Among these solutions, as a representative player, Datadog is known for its robust functionalities and capabilities. Therefore, the upcoming section will introduce two solutions for active monitoring: the solution developed and used internally by Amadeus since 2021 and another solution driven by Datadog's synthetic monitoring~\parencite{datadogSyntheticMonitoring}. 
 
-\section{Using Prometheus for Black Box Monitoring}
+\section{Amadeus' Active Monitoring}
 
-The Prometheus Blackbox Exporter is a valuable extension of the Prometheus monitoring system, specifically designed for monitoring external services and endpoints. This tool permits users to probe targets via HTTP, TCP, and ICMP protocols, yielding metrics related to availability, latency, SSL certificate expiration, and DNS resolution, among others. Its configuration options allow for the customization of probe settings, including timeout periods, headers, and probe methods. The metrics gathered are presented in a Prometheus-compatible format, enabling seamless integration with existing Prometheus monitoring setups~\parencite{prometheusOverviewPrometheus}~\parencite{prometheusBlackboxExporter2023}. 
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily, anchor=west},
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+    ]
 
-The Prometheus community is renowned for its high-quality software, a variety of plugins, and robust support, which can be leveraged when creating a Blackbox Monitoring system. According to a presentation by Aaron Wieczorek titled "Spotlight on Cloud: Using Prometheus for Black Box Monitoring," utilizing a Prometheus Blackbox Exporter based architecture for blackbox monitoring is a practical choice for systems already leveraging Prometheus for monitoring and alerting~\parencite{oreillySpotlightCloudUsing}. The following figure depicts the setup: 
+    \node (user) [node distance=5em, text width=3em, node, circle] {User};
 
-However, there are a few challenges. Prometheus' default data retention period is limited to fourteen days because its primary function is real-time system status monitoring and alert delivery. It is not built to retain large amounts of data for extended periods. Furthermore, Prometheus is not designed for a distributed setup, increasing complexity when configuring and deploying each Blackbox Exporter separately, especially during inevitable configuration changes (see Figure 2)~\parencite{prometheusOverviewPrometheus}. Another critical drawback is that Prometheus acts as a single point of failure, jeopardizing the availability of the monitoring system and risking data loss during a system failure. 
+    \node (operator) [node distance=3em, text width=8em, node, below=of user] {Operator\\(Handle CR)};
+    \node (scheduler) [node distance=3em, text width=8em, node, below=of operator] {Scheduler\\(Manage Probers)};
+    \node (prober1) [node distance=3em, text width=8em, node, below=of scheduler] {HTTP Prober};
+    \node (prober2) [node distance=3em, text width=8em, node, left=of prober1] {TCP Prober};
+    \node (prober3) [node distance=3em, text width=8em, node, right=of prober1] {HTTPS Prober};
+    \node (target1) [node distance=3em, text width=8em, node, below=of prober1] {Target B};
+    \node (target2) [node distance=3em, text width=8em, node, left=of target1] {Target A};
+    \node (target3) [node distance=3em, text width=8em, node, right=of target1] {Target C};
 
-In conclusion, implementing black box monitoring with the Prometheus Blackbox Exporter comes with benefits and drawbacks~\parencite{oreillySpotlightCloudUsing}. While it is praised for its simplicity, customization, and extensive community support, it has inherent limitations from its design, constraining its ability to fully exploit the power of a distributed architecture. Data retention for analytics is increasingly vital for ensuring the \ac{SLA} of private services. Without centralized control over all Blackbox Exporters, configuration management can become unwieldy, and the single point of failure inherent in the design presents a risk of data loss. Therefore, careful consideration of these trade-offs is essential in the design and decision-making process of the project. 
+    \node (CZ) [zone, fit={(operator) (scheduler) (prober1) (prober2) (prober3) (target1) (target2) (target3)}] {};
+    \node (C)[node distance=6pt, above=of CZ.north west, zonetag] {OpenShift Cluster};
 
-\section{Datadog in the Context of Black Box Monitoring Systems}
+    \path[->] (user) edge node[auto, midway] {Create CR} (operator);
+    \path[->] (operator) edge node[auto] {Configure} (scheduler);
+    \path[->] (scheduler) edge node[auto] {Trigger} (prober1);
+    \path[->] (scheduler) edge node[auto] {Trigger} (prober2);
+    \path[->] (scheduler) edge node[auto] {Trigger} (prober3);
+    \path[->] (prober1) edge node[auto] {} (target1);
+    \path[->] (prober2) edge node[auto] {Probe} (target1);
+    \path[->] (prober3) edge node[auto] {Probe} (target3);
+    \path[->] (prober3) edge node[auto] {Probe} (target2);
+  \end{tikzpicture}
+  \caption[Amadeus' Active Monitoring]{Amadeus' Active Monitoring.}\label{fig:amadeus-active-monitoring}
+\end{figure}
 
-In the realm of modern IT infrastructure management, monitoring and analytics platforms play an integral role in ensuring system reliability and performance. Among the existing solutions, Datadog has emerged as a prominent player, known for its robust functionalities and capabilities~\parencite{datadogSyntheticMonitoring}. In the context of this project, which aims to design a dedicated and distributed black box monitoring system, understanding Datadog's approach and technology is pivotal. 
+Inspired by the Blackbox Monitoring principles, Amadeus developed the active monitoring system by integrating the Operator pattern, aiming for a simple cloud monitoring solution. As shown in \autoref{fig:amadeus-active-monitoring}, this system is architecturally composed of three pivotal elements: the operator, the scheduler, and the prober. This design facilitates a lightweight yet practical approach to cloud-native monitoring. 
 
-Datadog offers a unified view of an organization's IT infrastructure by collecting and analyzing data from multiple sources. This approach enables real-time monitoring and troubleshooting, as well as optimization of applications and infrastructure. A standout feature of Datadog is its Synthetic Monitoring, which is particularly applicable for black box monitoring~\parencite{datadogSyntheticMonitoring} [Data]. This feature simulates requests and actions, thereby offering insights into the performance of APIs across various network layers, from backend to frontend~\parencite{datadogAPITests}~\parencite{datadogBrowserTests}. 
+Users initially tailor their monitoring setup using \ac{CR}. The operator is key in interpreting these \ac{CR}s to establish and maintain the scheduler's monitoring configuration. This approach highlights the system's flexibility, allowing users to define monitoring configurations that meet their specific needs. 
 
-There are two distinct elements of Datadog's Synthetic Monitoring that are of particular interest: API Tests and Browser Tests~\parencite{datadogAPITests}~\parencite{datadogBrowserTests}. API Tests actively probe target services, gathering their statuses and metrics. These tests offer a snapshot of the availability of the monitored services, a crucial factor in any black box monitoring system. In Datadog's implementation, API Tests form the bulk of the monitoring process, thereby highlighting their importance. Browser Tests, on the other hand, execute defined scenarios on target services using a chosen browser. This essentially reproduces the actions of a user, providing experiential feedback about the services. This user-centric approach complements the more technical data gathered by the API Tests, contributing to a more holistic view of the system's health. 
+The scheduler is central to the system's functionality, orchestrating the monitoring process. It is responsible for initiating monitoring requests, per the configurations detailed in the \ac{CR}s, and coordinating with the probers to gather the requisite data. The probers, designed as workers, are tasked with executing the monitoring by probing the targeted services and directing the collected data back to the scheduler. This component-driven approach ensures a comprehensive monitoring cycle. 
+
+Despite its sound design, the system's limitations restrain its potency, particularly in large-scale applications. Notably, the architecture presents a single point of failure at the scheduler, posing risks of data collection interruptions and potential traffic bottlenecks. The lack of scalability poses these challenges, making it difficult to efficiently monitor a vast array of distributed services across multiple clusters. 
+
+\section{Datadog's Synthetic Monitoring}
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center},
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+    ]
+
+    \node (datadog) [node distance=5em, text width=6em, node] {Datadog};
+
+    \node (agent1) [node distance=4em, text width=4em, node, below left=of datadog] {Agent};
+    \node (target1) [node distance=3em, text width=4em, node, left=of agent1] {Target};
+    \node (target2) [node distance=2em, text width=4em, node, below=of target1] {Target};
+    \node (target3) [node distance=2em, text width=4em, node, below=of target2] {Target};
+    \node (CZ1) [zone, fit={(agent1) (target1) (target2) (target3)}] {};
+    \draw[->] (datadog) -| node[auto, left] {Pull Metrics} (agent1);
+    \draw[->] (agent1) edge node[auto, below] {} (target1);
+    \draw[->] (agent1) |- node[auto, right] {API Test} (target2);
+    \draw[->] (agent1) |- node[auto] {} (target3);
+
+    \node (agent2) [node distance=4em, text width=4em, node, below right=of datadog] {Agent};
+    \node (target4) [node distance=3em, text width=4em, node, right=of agent2] {Target};
+    \node (target5) [node distance=2em, text width=4em, node, below=of target4] {Target};
+    \node (target6) [node distance=2em, text width=4em, node, below=of target5] {Target};
+    \node (CZ2) [zone, fit={(agent2) (target4) (target5) (target6)}] {};
+    \draw[->] (datadog) -| node[auto, right]{Pull Metrics} (agent2);
+    \draw[->] (agent2) edge node[auto, below] {} (target4);
+    \draw[->] (agent2) |- node[auto, left] {API Test} (target5);
+    \draw[->] (agent2) |- node[auto] {} (target6);
+
+    \draw[-] (agent1) edge node[auto] { Internal Network} (agent2);
+
+  \end{tikzpicture}
+  \caption[Datadog's Synthetic Monitoring]{Datadog's Synthetic Monitoring.}\label{fig:datadog-synthetic-monitoring}
+\end{figure}
+
+% In the realm of modern IT infrastructure management, monitoring and analytics platforms play an integral role in ensuring system reliability and performance. Among the existing solutions, Datadog has emerged as a prominent player, known for its robust functionalities and capabilities~\parencite{datadogSyntheticMonitoring}. In the context of this project, which aims to design a dedicated and distributed active monitoring system, understanding Datadog's approach and technology is pivotal. 
+
+As an integrated platform for monitoring, Datadog collects and analyzes data from multiple sources, offering a unified view of an organization's IT infrastructure. A standout feature of Datadog is the Synthetic Monitoring (see \autoref{fig:datadog-synthetic-monitoring}), which is particularly applicable for active monitoring~\parencite{datadogSyntheticMonitoring} [Data]. This feature simulates requests and actions, thereby offering insights into the performance of APIs across various network layers, from backend to frontend~\parencite{datadogAPITests}~\parencite{datadogBrowserTests}. 
+
+There are two distinct elements of Datadog's Synthetic Monitoring that are of particular interest: API Tests and Browser Tests~\parencite{datadogAPITests}~\parencite{datadogBrowserTests}. API Tests actively probe target services, gathering their statuses and metrics. These tests offer a snapshot of the availability of the monitored services, a crucial factor in any active monitoring system. In Datadog's implementation, API Tests form the bulk of the monitoring process, thereby highlighting their importance. Browser Tests, on the other hand, execute defined scenarios on target services using a chosen browser. This essentially reproduces the actions of a user, providing experiential feedback about the services. This user-centric approach complements the more technical data gathered by the API Tests, contributing to a more holistic view of the system's health. 
 
 When it comes to monitoring availability, it is crucial to decide the position of source endpoints that proceed with monitoring~\parencite{datadogRunSyntheticTests}. Datadog provides the feature to customize private locations to execute Synthetic Monitoring. By installing Docker containers as private endpoints in desired locations, Synthetic Monitoring, including both API Tests and Browser Tests, can employ these private endpoints to compose its line of departure. 
 
 While Datadog's synthetic monitoring approach presents a well-rounded solution, it operates primarily within a centralized model in terms of the agents' side. To elaborate, monitoring targets from a private location requires an installed agent in the same cluster, and the agent could be a single point of failure. 
-
-This brings us to the primary focus of our thesis: to explore the feasibility and benefits of a distributed black box monitoring system. As businesses scale and become increasingly distributed, there may be unique advantages to employing a monitoring system that mirrors this distributed structure. By building on the strengths of Datadog's approach, while addressing its potential limitations in distributed environments, we aim to advance the field of black box monitoring. 
