@@ -3,6 +3,32 @@
 
 \chapter{Summary and Conclusion}\label{chapter:summary_and_conclusion}
 
-\section{Section}
+% Intro
+A sound system monitoring solution is indispensable in the IT industry. Amadeus explicitly emphasizes the unique requirements and solutions applicable to complex networks of interconnected applications, so adopting a proper monitoring approach becomes gradually crucial. The increasing demands have proven that observability goes beyond just being practical, which ensures modern IT industries operate smoothly and deliver top-quality services. 
 
-\subsection{Subsection}
+The creation and deployment of the Amadeus Observability Platform, which utilizes the Prometheus ecosystem and incorporates Splunk, highlights the necessity for a durable, scalable, and adaptable monitoring system. Besides, researching Active Monitoring methodologies reflects Amadeus's dedication to the early detection and resolution of issues, significantly enhancing service quality. Thus, three potential solutions were investigated to harness Active Monitoring in the Amadeus Observability Platform: the self-developed system employed operator, scheduler, and probers, integration of bare Prometheus Agent and Blackbox Exporter, and using the Prometheus Operator for more advanced cloud integration. 
+
+Within this project, The selection of the third option, which involves the Prometheus Operator, Prometheus Agent, and Blackbox Exporter, was based on its alignment with the platform's pre-existing framework and its superior scalability, reliability, and manageability. With its capacity for automating configuration and management tasks and the Operator pattern compatibility with container orchestrators such as Kubernetes and OpenShift, the Prometheus Operator emerges as a particularly persuasive choice for implementation. 
+
+% design
+The goals focus on developing a scalable, reliable, and cloud-ready active monitoring platform within the Prometheus ecosystem, tailored explicitly for integration with the Amadeus Observability Platform. It emphasizes compatibility with various custom protocols, such as the \ac{TCIL} protocol used at Amadeus, and seeks to ensure scalability through strategies like load balancing and sharding. The platform prioritizes reliability through fault tolerance, enabling seamless takeover by another prober in case of failure. Cloud readiness is achieved by ensuring compatibility with Amadeus's cloud infrastructure, particularly OpenShift clusters. 
+
+The design incorporates Kubernetes and OpenShift for container orchestration, focusing on deploying a modified Prometheus Operator to manage Prometheus Agents and probe configurations efficiently. This approach facilitates lightweight scheduling and probing, leveraging Prometheus's remote write and scraping strategy feature to enhance efficiency and reduce peak request loads. Additionally, implementing Blackbox Exporters and custom probers, like the \ac{TCIL} Pinger, alongside load balancers aims to optimize load distribution and reliability. 
+
+The architecture supports active monitoring across various clusters and namespaces through customizable probes managed and deployed via Prometheus Operator and Prometheus Agent. This system architecture integrates seamlessly with the existing Amadeus Observability Platform and offers improved efficiency, high availability, and scalability. 
+
+The proposed monitoring platform represents an improvement in active monitoring capabilities for the Amadeus Observability Platform. It is meticulously crafted to tackle the complex challenges of overseeing thousands of applications distributed across numerous clusters by leveraging modern container orchestration technologies alongside the Prometheus ecosystem. The emphasis on scalability, reliability, and cloud readiness ensures that the platform can adapt to the dynamic nature of cloud infrastructure while providing a robust and efficient monitoring solution. More than just a technical upgrade, this project highlights the critical role of active monitoring in preserving the reliability of expansive cloud-based applications. Through its cloud-native design and strategic implementation approaches, the monitoring platform is set to support the observability and operational efficacy of the Amadeus Observability Platform. 
+
+% analysis
+The concluding analysis contrasts the newly designed observability solution with Amadeus's original in-house monitoring application, focusing on their operational overhead within a proprietary OpenShift Cluster. A systematic comparison of crucial performance metrics—such as \ac{CPU}, memory, and network usage—utilizing OpenShift built-in tools like cAdvisor and the Network Metrics Daemon forms the basis of this evaluation. 
+
+The observations reveal a minor difference in resource usage between the Prometheus Agent and Amadeus's Scheduler, even though they serve similar purposes. A detailed comparison of \ac{CPU} usage highlights the superior operational efficiency of the Prometheus Agent. Significantly, the agent shows a notable improvement in memory usage, saving around 140 MB more than the conventional scheduler, with minimal differences in network I/O. 
+
+The analysis also contrasts the Blackbox Exporter with Amadeus's \ac{HTTP} Prober. While the Blackbox Exporter shows a slight increase in \ac{CPU} consumption, this is balanced by its improved functionality and considerable memory saving, saving approximately 250 MB. The slight rise in network input is considered negligible and is not expected to negatively impact the system's scalability or overall performance. 
+
+Additionally, an evaluation of the scraping strategies reveals the Prometheus Agent's superior approach in distributing network loads evenly over time, contrasting with the peak traffic patterns associated with Amadeus's Scheduler. This strategic load distribution suggests a more efficient and stable network traffic scenario, further validating the Prometheus Agent's implementation. 
+
+Therefore, the shift towards the Prometheus Agent and Blackbox Exporter presents an acceptable overhead and significantly boosts memory efficiency while maintaining \ac{CPU} and network performance. In addition to the scalability brought about by the Prometheus Operator, these resource utilization and load management enhancements substantially improve the overhead of the original in-house solution. 
+
+% conclusion
+In summary, the thesis contributes significantly to the existing knowledge on active monitoring by offering an in-depth look at the monitoring requirements of a vast and complicated IT ecosystem and proposing a scalable solution that leverages contemporary technology and methodologies. The comprehensive evaluation of system design, integration, and deployment process provides valuable perspectives on establishing and managing an active monitoring system. 

@@ -31,39 +31,39 @@ The design proposal utilizes container orchestrators, including Kubernetes and O
       zone/.style={draw=black!60, inner sep=8pt, anchor=west}
     ]
 
-    \node (LB1) [node distance=2cm, below=of C, text width=6em, node, fill=red!10] {Load\\Balancer};
-    \node (LB2) [node distance=3cm, left=of LB1, text width=6em, node, fill=red!10] {Load\\Balancer};
-    \node (Prober1) [node distance=3cm, below=of LB1.west, text width=6em, node, fill=red!10] {TCIL\\Probers};
-    \node (Prober2) [node distance=3cm, below=of LB2.west, text width=6em, node, fill=red!10] {Blackbox\\Exporters};
+    \node (LB1) [node distance=2cm, below=of C, text width=6em, node] {Load\\Balancer};
+    \node (LB2) [node distance=3cm, left=of LB1, text width=6em, node] {Load\\Balancer};
+    \node (Prober1) [node distance=3cm, below=of LB1.west, text width=6em, node] {TCIL\\Probers};
+    \node (Prober2) [node distance=3cm, below=of LB2.west, text width=6em, node] {Blackbox\\Exporters};
     \node (LB1Z) [zone, dashed, rounded corners, fit={(LB1) (Prober1)}] {};
     \node (LB2Z) [zone, dashed, rounded corners, fit={(LB2) (Prober2)}] {};
-    \node (PO) [node distance=5cm, right=of LB1.west, text width=6em, node, fill=red!10] {Prometheus\\Operator};
-    \node (PA) [node distance=3cm, below=of PO.west, text width=6em, node, fill=red!10] {Prometheus\\Agents};
+    \node (PO) [node distance=5cm, right=of LB1.west, text width=6em, node] {Prometheus\\Operator};
+    \node (PA) [node distance=3cm, below=of PO.west, text width=6em, node] {Prometheus\\Agents};
     \node (PAZ) [zone, dashed, rounded corners, fit={(PA)}] {};
-    \node (CRDP) [node distance=7em, above=of PO.base, text width=6em, node, ellipse, fill=blue!10, anchor=base] {CRD\\Probe};
-    \node (CRDPA) [node distance=5cm, left=of CRDP, text width=8em, node, ellipse, fill=blue!10] {CRD\ PrometheusAgent};
-    \node (UZ) [zone, dashed, fit={(LB1) (LB2) (Prober1) (Prober2) (LB1Z) (LB2Z) (PO) (PA) (PAZ) (CRDPA) (CRDP)}] {};
+    \node (CRDP) [node distance=7em, above=of PO.base, text width=12em, node, anchor=base] {CRD\\PrometheusAgent/Probe};
+    % \node (CRDPA) [node distance=5cm, left=of CRDP, text width=10em, node, fill=blue!10] {CRD\ PrometheusAgent};
+    \node (UZ) [zone, dashed, fit={(LB1) (LB2) (Prober1) (Prober2) (LB1Z) (LB2Z) (PO) (PA) (PAZ) (CRDP)}] {};
     \node (U) [node distance=6pt, above=of UZ.north west, zonetag, anchor=west] {Active Monitoring Platform};
 
-    \node (TS1) [node distance=3cm, below=of Prober1.west, text width=6em, node, fill=green!10] {Target\\Service\ 1};
+    \node (TS1) [node distance=3cm, below=of Prober1.west, text width=6em, node] {Target\\Service\ 1};
     \node (C1Z) [zone, dashed, fit={(TS1)}] {};
     \node (C1) [node distance=2pt, below=of C1Z, zonetag] {Product A};
 
-    \node (TS2) [node distance=3cm, below=of Prober2.west, text width=6em, node, fill=green!10] {Target\\Service\ 2};
+    \node (TS2) [node distance=3cm, below=of Prober2.west, text width=6em, node] {Target\\Service\ 2};
     \node (C2Z) [zone, dashed, fit={(TS2)}] {};
     \node (C2) [node distance=2pt, below=of C2Z, zonetag] {Product B};
 
-    \node (TR) [node distance=3cm, below=of PA.west, text width=6em, node, fill=green!10] {Thanos\\Receive};
+    \node (TR) [node distance=3cm, below=of PA.west, text width=6em, node] {Thanos\\Receive};
     \node (GZ) [zone, dashed, fit={(TR)}] {};
     \node (G) [node distance=2pt, below=of GZ, zonetag] {Amadeus Observability Platform};
 
-    \node (CZ) [zone, fit={(U) (LB1) (LB2) (Prober1) (Prober2) (PO) (PA) (CRDPA) (CRDP) (UZ) (G) (GZ) (TR) (TS1) (TS2) (C1) (C1Z)}] {};
+    \node (CZ) [zone, fit={(U) (LB1) (LB2) (Prober1) (Prober2) (PO) (PA) (CRDP) (UZ) (G) (GZ) (TR) (TS1) (TS2) (C1) (C1Z)}] {};
     \node (C)[node distance=6pt, above=of CZ.north west, zonetag, anchor=west] {OpenShift Cluster};
 
     \path[->]
       (PO) edge node[auto] {manage} (PA)
-      (PO) edge node[auto, right] {} (CRDPA)
-      (PO) edge node[auto, left] {watch} (CRDP)
+      % (PO) edge node[auto, right] {} (CRDPA)
+      (PO) edge node[auto, right] {watch} (CRDP)
       (PA) edge node[auto, right] {remote write} (TR)
       (PA) edge node[auto, sloped] {scrape} (LB1)
       (PA) edge node[auto, sloped] {scrape} (LB2)
@@ -72,7 +72,7 @@ The design proposal utilizes container orchestrators, including Kubernetes and O
       (Prober1) edge node[auto] {probe} (TS1)
       (Prober2) edge node[auto] {probe} (TS2);
   \end{tikzpicture}
-  \caption[System Design]{System Design with Prometheus Operator, Prometheus Agent and Probers.}\label{fig:system-design}
+  \caption[System Design - Prometheus Operator, Prometheus Agent and Probers]{System Design with Prometheus Operator, Prometheus Agent and Probers.}\label{fig:system-design}
 \end{figure}
 
 Inside the cluster, a slightly modified Prometheus Operator would be installed, responsible for deploying and managing Promenteus Agents and probe configurations. Next, Blackbox Exporters and customized probers like the \ac{TCIL} Pinger, which is still in development, would be deployed with load balancers, leveraging horizontal scalability for better load distribution. 
@@ -203,32 +203,32 @@ Lastly, the third workflow is fully automatic, carrying out probes over differen
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
       shorten >=1pt,
-      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily, anchor=west},
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
       node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt, anchor=base}
     ]
 
-    \node (user) [node distance=5em, text width=2em, node, circle, fill=green!10] {User};
-    \node (git) [node distance=5em, text width=2em, node, diamond, fill=gray!10, right=of user] {Git};
-    \node (argo) [node distance=7em, text width=3em, node, fill=orange!10, right=of git] {Argo};
+    \node (user) [node distance=5em, text width=2em, node, circle] {User};
+    \node (git) [node distance=3em, text width=2em, node, diamond, below=of user, font=\bfseries] {Git};
+    \node (argo) [node distance=3em, text width=3em, node, below=of git, font=\bfseries] {Argo};
 
-    \node (api) [node distance=3em, text width=8em, node, fill=red!10, below=of argo] {OpenShift API};
+    \node (api) [node distance=3em, text width=8em, node, below=of argo] {OpenShift API};
 
-    \node (CRDP) [node distance=3em, text width=6em, node, ellipse, fill=blue!10, below=of api] {CRD\\Probe};
-    \node (CRDPA) [node distance=3em, text width=8em, node, ellipse, fill=blue!10, left=of CRDP] {CRD\ PrometheusAgent};
-    \node (UZ) [zone, dashed, fit={(CRDPA) (CRDP)}] {};
-    \node (U) [node distance=6pt, above=of UZ.north west, zonetag] {Active Monitoring Platform};
+    \node (CRDP) [node distance=3em, text width=12em, node, below=of api] {CRD\\PrometheusAgent/Probe};
+    % \node (CRDPA) [node distance=3em, text width=8em, node, ellipse, fill=blue!10, left=of CRDP] {CRD\ PrometheusAgent};
+    \node (UZ) [zone, dashed, fit={(CRDP)}] {};
+    \node (U) [node distance=6pt, below=of UZ.south, zonetag] {Active Monitoring Platform};
 
-    \node (CZ) [zone, fit={(api) (CRDPA) (CRDP) (UZ) (U)}] {};
-    \node (C)[node distance=6pt, above=of CZ.north west, zonetag] {OpenShift Cluster};
+    \node (CZ) [zone, fit={(api) (CRDP) (UZ) (U)}] {};
+    \node (C)[node distance=6pt, below=of CZ.south, zonetag] {OpenShift Cluster};
 
     \path[->] (user) edge node[auto] {PR merge} (git);
     \path[<-] (git) edge node[auto] {pull changes} (argo);
     \path[->] (argo) edge node[auto] {webhook event} (api);
     \path[->] (api) edge node[auto] {apply} (CRDP);
-    \path[->] (api) edge node[auto] {apply} (CRDPA);
+    % \path[->] (api) edge node[auto] {apply} (CRDPA);
   \end{tikzpicture}
-  \caption[GitOps]{Utilizing GitOps to manage \ac{CRD}s.}\label{fig:gitops}
+  \caption[Utilizing GitOps to manage CRDs]{Utilizing GitOps to manage \ac{CRD}s.}\label{fig:gitops}
 \end{figure}
 
 So far, the design successfully addresses all requirements regarding active monitoring. However, Amadeus has plenty of clusters and namespaces, and numerous developers or users would deploy their own \ac{CR} in their clusters and namespaces. So, managing deployed \ac{CR}s becomes another crucial issue. 

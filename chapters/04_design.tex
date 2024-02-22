@@ -27,13 +27,13 @@ In conclusion, the Prometheus Operator enhances cloud monitoring by automating t
       zone/.style={draw=black!60, inner sep=8pt, anchor=west}
     ]
 
-    \node (CRDP) [node distance=7em, text width=3em, node, ellipse, fill=blue!10, anchor=base] {CRD\\Probe};
-    \node (PO) [node distance=7em, below=of CRDP.base, text width=7em, node, fill=red!10, anchor=base] {Prometheus\\Operator};
+    \node (CRDP) [node distance=7em, text width=7em, node, anchor=base] {CRD\\Probe};
+    \node (PO) [node distance=7em, below=of CRDP.base, text width=7em, node, anchor=base] {Prometheus\\Operator};
 
     \node (conf1) [node distance=4cm, below=of PO.west, text width=7em, node] {Prometheus Config 1};
     \node (conf2) [node distance=8em, right=of conf1.east, text width=7em, node] {Prometheus Config 2};
-    \node (PAI1) [node distance=4em, below=of conf1.west, text width=7em, node, fill=red!10] {Prometheus Agent Instance};
-    \node (PAI2) [node distance=4em, below=of conf2.west, text width=7em, node, fill=red!10] {Prometheus Agent Instance};
+    \node (PAI1) [node distance=4em, below=of conf1.west, text width=7em, node] {Prometheus Agent Instance};
+    \node (PAI2) [node distance=4em, below=of conf2.west, text width=7em, node] {Prometheus Agent Instance};
 
     \node (PA1Z) [zone, rounded corners, fit={(conf1) (PAI1)}] {};
     \node (PA1) [node distance=6pt, below=of PA1Z, zonetag] {Prometheus Agent 1};
@@ -75,9 +75,9 @@ Overall, the Prometheus Agent is an inevitable addition to the design of the act
       zone/.style={draw=black!60, inner sep=8pt}
     ]
     \node (traffic) [node] {Traffic};
-    \node (l7) [node, right=of traffic, text width=8em, fill=red!10] {Load Balancer/\\Ingress/Route};
+    \node (l7) [node, right=of traffic, text width=8em, font=\bfseries] {Load Balancer/\\Ingress/Route};
     \node (l7tag) [zonetag, above=of l7] {Layer 7};
-    \node (l34) [node, right=of l7, text width=4em, fill=red!10] {Service};
+    \node (l34) [node, right=of l7, text width=4em, font=\bfseries] {Service};
     \node (l34tag) [zonetag, above=of l34] {Layer 3/4};
     \node (pod1) [node, above right=of l34] {Pod};
     \node (pod2) [node, right=of l34] {Pod};
@@ -89,12 +89,12 @@ Overall, the Prometheus Agent is an inevitable addition to the design of the act
     \draw[->] (l34) -- node[auto] {} (pod2);
     \draw[->] (l34) -- node[auto] {} (pod3);
   \end{tikzpicture}
-  \caption[Openshift Route]{Route is the resource responsible for Load Balancing in Openshift.}\label{fig:openshift-route}
+  \caption[OpenShift Load Balancing]{Route and Service are responsible for Load Balancing in Openshift.}\label{fig:openshift-load-balancing}
 \end{figure}
 
 Blackbox Exporter, a probing tool for the Prometheus monitoring system, is essential for assessing the performance and availability of services in network environments. It plays an important role in monitoring and diagnosing systems designed for probing endpoints over various protocols like \ac{HTTP}/\ac{HTTPS}, \ac{DNS}, \ac{TCP}, and \ac{ICMP}. 
 
-In complex infrastructures hosting multiple services, it is crucial to integrate the Blackbox Exporter with Layer 7 load-balancing solutions such as built-in Load Balancers, OpenShift Routes, Kubernetes Ingress, or Layer 3 and 4 solutions like the Service, as depicted in Figure \autoref{fig:openshift-route}. This integration enables scalable and efficient monitoring, ensuring the reliability of the monitoring system as the service count increases. 
+In complex infrastructures hosting multiple services, it is crucial to integrate the Blackbox Exporter with Layer 7 load-balancing solutions such as built-in Load Balancers, OpenShift Routes, Kubernetes Ingress, or Layer 3 and 4 solutions like the Service, as depicted in Figure \autoref{fig:openshift-load-balancing}. This integration enables scalable and efficient monitoring, ensuring the reliability of the monitoring system as the service count increases. 
 
 Moreover, combined with automatic horizontal scaling, resource utilization efficiency could be significantly enhanced. Load balancers optimize traffic flow to the Blackbox Exporter instances; the orchestrator scales the number of the Blackbox Exporter instances, ensuring that the monitoring process does not overuse or run out of resources. 
 
