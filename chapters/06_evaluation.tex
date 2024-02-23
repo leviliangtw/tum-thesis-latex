@@ -183,7 +183,7 @@ Prometheus' and Amadeus's solutions feature a similar architecture: the schedule
               ymin=0,
               grid,
               thick,
-              ylabel=CPU (m),
+              ylabel=CPU (millicore),
               xlabel=Time (hour),
               legend columns=-1,
               legend style={legend pos=south east},
@@ -237,7 +237,7 @@ Prometheus' and Amadeus's solutions feature a similar architecture: the schedule
     \caption[Scheduler Analysis]{Scheduler analysis.}\label{fig:scheduler-analysis}
 \end{figure}
 
-The Prometheus Agent and Amadeus' Scheduler perform similar roles but differ in their implementations, with the Prometheus Agent providing additional features. As depicted in the \autoref{fig:scheduler-analysis}, the CPU utilization of both schedulers is nearly identical, a result of the minor units in the measurement. Surprisingly, memory utilization by the Prometheus Agent was significantly reduced by approximately 140 MB. Regarding network I/O, given that the measurements are in kB, the differences are relatively inconsequential. In summary, adopting the Prometheus Agent results in an acceptable overhead while substantially decreasing memory consumption. 
+The Prometheus Agent and Amadeus' Scheduler perform similar roles but differ in their implementations, with the Prometheus Agent providing additional features. As depicted in the \autoref{fig:scheduler-analysis}, the CPU utilization between the two schedulers shows slight differences due to the minor units in the measurement. Surprisingly, memory utilization by the Prometheus Agent was significantly reduced by approximately 140 MB. Regarding network I/O, given that the measurements are in kB, the differences are relatively inconsequential. Adopting the Prometheus Agent results in an acceptable overhead while substantially decreasing memory consumption. 
 
 \subsection{Prober Analysis}
 
@@ -372,7 +372,7 @@ The Prometheus Agent and Amadeus' Scheduler perform similar roles but differ in 
               ymin=0,
               grid,
               thick,
-              ylabel=CPU (m),
+              ylabel=CPU (millicore),
               xlabel=Time (hour),
               legend columns=-1,
               legend style={legend pos=south east},
@@ -428,7 +428,7 @@ The Prometheus Agent and Amadeus' Scheduler perform similar roles but differ in 
   \caption[Prober Analysis]{Prober analysis.}\label{fig:prober-analysis}
 \end{figure}
 
-The Blackbox Exporter, capable of conducting customized probes across different protocols, contrasts with Amadeus' HTTP Prober's limitation to only HTTP probes. For a fair comparison, only the HTTP module is used in the Blackbox Exporter. \autoref{fig:prober-analysis} shows the Blackbox Exporter's CPU usage is slightly higher than Amadeus' by about 10m, a minor increase justified by its extended features and considered acceptable. Notably, it also offers a substantial memory usage improvement of approximately 250 MB. Although its network input is double that of its counterpart, investigations reveal this is due to the Prometheus Agent's more detailed HTTP GET requests, which are not expected to cause issues, even when scaling up to 10 or 100 times the number of targets due to the lightweight nature of these requests. In summary, the minor increases in CPU and network input by the Blackbox Exporter are more than compensated for by considerable memory savings, making it a fully acceptable solution. 
+The Blackbox Exporter, capable of conducting customized probes across different protocols, contrasts with Amadeus' HTTP Prober's limitation to only HTTP probes. For a fair comparison, only the HTTP module is used in the Blackbox Exporter. \autoref{fig:prober-analysis} shows the Blackbox Exporter's CPU usage is slightly higher than Amadeus' by about 10 millicores, a minor increase justified by its extended features and considered acceptable. Notably, it also offers a substantial memory usage improvement of approximately 250 MB. Although its network input is double that of its counterpart, investigations reveal this is due to the Prometheus Agent's more detailed HTTP GET requests, which are not expected to cause issues, even when scaling up to 10 or 100 times the number of targets due to the lightweight nature of these requests. In summary, the minor increases in CPU and network input by the Blackbox Exporter are more than compensated for by considerable memory savings, making it a fully acceptable solution. 
 
 \subsection{Scraping Analysis}
 

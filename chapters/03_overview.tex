@@ -183,7 +183,7 @@ Finally, users with active monitoring requirements across various clusters and n
     \draw[->] ($(prober)!0.40!(prober_ground)$) -- node[description]{Probe} ($(target)!0.40!(target_ground)$);
     \draw[<-] ($(prober)!0.50!(prober_ground)$) -- node[description, below]{Response\\(raw data)} ($(target)!0.50!(target_ground)$);
     \draw[<-] ($(PA)!0.65!(PA_ground)$) -- node[description]{Response\\(refined metrics)} ($(prober)!0.65!(prober_ground)$);
-    \draw[->] ($(PA)!0.80!(PA_ground)$) -- node[description, below]{Remote write\\(relabeld metrics)} ($(TR)!0.80!(TR_ground)$);
+    \draw[->] ($(PA)!0.80!(PA_ground)$) -- node[description, below]{Remote write\\(relabeled metrics)} ($(TR)!0.80!(TR_ground)$);
   \end{tikzpicture}
   \caption[System Workflow - Probe Scheduling]{Scheduling probes by Prometheus Agent.}\label{fig:system-workflow-scheduling}
 \end{figure}

@@ -102,7 +102,7 @@ By following these steps, the deployment of the Blackbox Exporter can be ensured
 
 \subsection{Load Balancing via the Service}
 
-In container orchestrators, Service for load balancing is optimal when Layer 7 functionalities are unnecessary and reducing load overhead is essential. The Service functions as a layer above the pods, creating a consolidated access point that distributes traffic evenly among different Blackbox Exporter pod instances. This method leverages kube-proxy's iptables mode for efficient traffic distribution. The following steps guide setting up load balancing with the Service: 
+In the context of container orchestration, leveraging an OpenShift Service for load distribution at OSI Layer 4 is preferable and more efficient when there is no requirement for Layer 7 capabilities, such as path-based routing, thereby minimizing load-related overhead. The Service functions as a layer above the pods, creating a consolidated access point that distributes traffic evenly among different Blackbox Exporter pod instances. This method leverages kube-proxy's iptables mode for efficient traffic distribution. The following steps guide setting up load balancing with the Service: 
 
 \begin{enumerate}
     \item \textbf{Create the Service Resource for the Blackbox Exporter:}
@@ -153,6 +153,7 @@ Deploying a custom object from the PrometheusAgent \ac{CRD}, which is monitored 
 \begin{enumerate}
 \item \textbf{Define a Custom Object from the PrometheusAgent \ac{CRD}:}
 Create a custom object in YAML format with the necessary specifications of the PrometheusAgent \ac{CRD}, including "probeSelector" and "remoteWrite" configurations. Here is an example:
+\lstset{upquote=true}
 \begin{lstlisting}
     apiVersion: monitoring.coreos.com/v1
     kind: PrometheusAgent
@@ -191,6 +192,7 @@ Deploying the custom object from the Probe \ac{CRD} is the last crucial step in 
 \begin{enumerate}
     \item \textbf{Define a Custom Object from the Probe \ac{CRD}:}
     Create a custom object in YAML format to establish the desired monitoring configurations. Ensure that this object includes all essential fields, such as module, prober, and targets. Additionally, confirm that the metadata.labels within the object match the probeSelector.matchLabels specified in the previous section. For example, please refer to the provided code below. 
+        \lstset{upquote=true}
         \begin{lstlisting}
             apiVersion: monitoring.ruup.amadeus.net/v1
             kind: Probe
