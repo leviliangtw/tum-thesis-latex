@@ -119,7 +119,7 @@ The created Service of the Blackbox Exporter serves as a central gateway for Pro
 
 \subsection{Scalability via the Horizontal Pod Autoscaler (\ac{HPA})}
 
-The \ac{HPA} boosts elasticity and cost efficiency by enabling dynamic adjustment of pod replicas in response to varying workloads, thus enhancing application scalability. It scales the number of pod replicas based on metrics like CPU usage. This section explains how to implement an \ac{HPA} for the Blackbox Exporter, allowing it to scale dynamically according to workload changes: 
+The \ac{HPA} boosts elasticity and cost efficiency by enabling dynamic adjustment of pod replicas in response to varying workloads, thus enhancing application scalability. It scales the number of pod replicas based on the usage of CPU, memory, or any other customized metrics\parencite{redhatCustomMetricsAutoscaler}. This section explains how to implement an \ac{HPA} for the Blackbox Exporter, allowing it to scale dynamically according to workload changes: 
 
 \begin{enumerate}
     \item \textbf{Ensure the Metrics Server:}

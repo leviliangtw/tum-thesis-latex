@@ -48,7 +48,7 @@ By examining network I/O, we aim to understand the network performance and effic
 
 \section{System Analysis}
 
-Prometheus' and Amadeus's solutions feature a similar architecture: the scheduler triggers the prober to carry out monitoring tasks while the prober probes targets. The forthcoming analysis will span 12 hours, focusing on the average hourly values of each metric. Given that the target count is nearing 100, the following analysis will distinctly address both the scheduler and the prober, specifically within the scenario of probing 100 targets. 
+Prometheus' and Amadeus's solutions feature a similar architecture: the scheduler triggers the prober to carry out monitoring tasks while the prober probes targets. The forthcoming analysis will span 12 hours, focusing on the average hourly values of each metric. Given that the average target count in production environments is nearing 100, the following analysis will address both the scheduler and the prober within the scenario of probing 100 targets. 
 
 \subsection{Scheduler Analysis}
 
@@ -430,9 +430,184 @@ The Prometheus Agent and Amadeus' Scheduler perform similar roles but differ in 
 
 The Blackbox Exporter, capable of conducting customized probes across different protocols, contrasts with Amadeus' HTTP Prober's limitation to only HTTP probes. For a fair comparison, only the HTTP module is used in the Blackbox Exporter. \autoref{fig:prober-analysis} shows the Blackbox Exporter's CPU usage is slightly higher than Amadeus' by about 10 millicores, a minor increase justified by its extended features and considered acceptable. Notably, it also offers a substantial memory usage improvement of approximately 250 MB. Although its network input is double that of its counterpart, investigations reveal this is due to the Prometheus Agent's more detailed HTTP GET requests, which are not expected to cause issues, even when scaling up to 10 or 100 times the number of targets due to the lightweight nature of these requests. In summary, the minor increases in CPU and network input by the Blackbox Exporter are more than compensated for by considerable memory savings, making it a fully acceptable solution. 
 
-\subsection{Scraping Analysis}
+\section{Overhead Analysis}
 
-This analysis evaluates the effectiveness of the Prometheus Agent's scraping strategy. Unlike Amadeus' Scheduler, which does not evenly distribute requests over time, the Prometheus Agent spreads scrapings uniformly across the time interval. Theoretically, this approach results in peak traffic at the start of each interval for Amadeus' Scheduler, while the Prometheus Agent achieves a more balanced load distribution. The subsequent figure presents the outcome of monitoring the Network In of the Prober—primarily influenced by the Scheduler's requests—over a 30-minute period:
+This overhead analysis evaluates the escalating load rate as the target number increases from 100 to 1000. Utilizing these findings could enhance the use of \ac{HPA} by identifying appropriate threshold metrics. All metrics were recorded as hourly averages for each target number, expected to increase proportionally with the target number in theory: 
+
+\begin{figure}[htpb]
+  \centering
+  \pgfplotstableset{col sep=&, row sep=\\}
+  % This should probably go into a file in data/
+  \pgfplotstableread{
+    a & b    \\
+    100 & 4.13 \\
+    200 & 5.46 \\
+    300 & 6.95 \\
+    400 & 10.0 \\
+    500 & 11.7 \\
+    % 600 & 4.23 \\
+    % 700 & 4.27 \\
+    % 800 & 4.23 \\
+    % 900 & 4.19 \\
+    % 1000 & 4.23 \\
+  }\cpuA
+  \pgfplotstableread{
+    a & b    \\
+    100 & 16.8 \\
+    200 & 32.7 \\
+    300 & 48.6 \\
+    400 & 63.8 \\
+    500 & 79.7 \\
+    % 600 & 2.56 \\
+    % 700 & 2.71 \\
+    % 800 & 2.62 \\
+    % 900 & 2.64 \\
+    % 1000 & 2.60 \\
+  }\cpuB
+  \pgfplotstableread{
+    a & b    \\
+    100 & 245 \\
+    200 & 328 \\
+    300 & 426 \\
+    400 & 496 \\
+    500 & 610 \\
+    % 600 & 124 \\
+    % 700 & 124 \\
+    % 800 & 124 \\
+    % 900 & 125 \\
+    % 1000 & 124 \\
+  }\memA
+  \pgfplotstableread{
+    a & b    \\
+    100 & 92.7 \\
+    200 & 101 \\
+    300 & 110 \\
+    400 & 124 \\
+    500 & 133 \\
+    % 600 & 267 \\
+    % 700 & 267 \\
+    % 800 & 267 \\
+    % 900 & 267 \\
+    % 1000 & 267 \\
+  }\memB
+  \pgfplotstableread{
+    a & b    \\
+    100 & 3.25 \\
+    200 & 6.31 \\
+    300 & 9.36 \\
+    400 & 12.5 \\
+    500 & 15.5 \\
+    % 600 & 3.25 \\
+    % 700 & 3.25 \\
+    % 800 & 3.26 \\
+    % 900 & 3.26 \\
+    % 1000 & 3.25 \\
+  }\netinA
+  \pgfplotstableread{
+    a & b    \\
+    100 & 30.3 \\
+    200 & 60.5 \\
+    300 & 90.6 \\
+    400 & 121 \\
+    500 & 150 \\
+    % 600 & 2.05 \\
+    % 700 & 2.04 \\
+    % 800 & 2.04 \\
+    % 900 & 2.04 \\
+    % 1000 & 2.05 \\
+  }\netinB
+  \pgfplotstableread{
+    a & b    \\
+    100 & 3.29 \\
+    200 & 6.34 \\
+    300 & 9.35 \\
+    400 & 12.4 \\
+    500 & 15.4 \\
+    % 600 & 3.27 \\
+    % 700 & 3.27 \\
+    % 800 & 3.28 \\
+    % 900 & 3.27 \\
+    % 1000 & 3.27 \\
+  }\netoutA
+  \pgfplotstableread{
+    a & b    \\
+    100 & 11.6 \\
+    200 & 19.1 \\
+    300 & 26.6 \\
+    400 & 33.8 \\
+    500 & 41.4 \\
+    % 600 & 9.53 \\
+    % 700 & 9.49 \\
+    % 800 & 9.54 \\
+    % 900 & 9.54 \\
+    % 1000 & 9.57 \\
+  }\netoutB
+  % This should probably go into a file in figures/
+  \scalebox{.85}{\begin{tabular}{ c c }
+      \begin{tikzpicture}
+          \begin{axis}[
+            ymin=0,
+            grid,
+            thick,
+            ylabel=CPU (millicore),
+            xlabel=Target Number,
+            legend columns=-1,
+            legend style={legend pos=south east},
+            legend cell align={left}, 
+            legend to name=overhead-analysis
+            ]
+            \addplot[mark=*, blue] table[x=a, y=b]{\cpuA};
+            \addplot[mark=x, red] table[x=a, y=b]{\cpuB};
+            \addlegendentry{Prometheus Agent\ \ \ \ };
+            \addlegendentry{Blackbox Exporter};
+          \end{axis}
+      \end{tikzpicture} &
+      \begin{tikzpicture}
+          \begin{axis}[
+              ymin=0,
+              grid,
+              thick,
+              ylabel=Memory (MB),
+              xlabel=Target Number
+            ]
+            \addplot[mark=*, blue] table[x=a, y=b]{\memA};
+            \addplot[mark=x, red] table[x=a, y=b]{\memB};
+          \end{axis}
+      \end{tikzpicture} \\ 
+      \begin{tikzpicture}
+          \begin{axis}[
+              ymin=0,
+              grid,
+              thick,
+              ylabel=Network In (kB/s),
+              xlabel=Target Number
+            ]
+            \addplot[mark=*, blue] table[x=a, y=b]{\netinA};
+            \addplot[mark=x, red] table[x=a, y=b]{\netinB};
+          \end{axis}
+        \end{tikzpicture} &
+        \begin{tikzpicture}
+          \begin{axis}[
+              ymin=0,
+              grid,
+              thick,
+              ylabel=Network Out (kB/s),
+              xlabel=Target Number
+            ]
+            \addplot[mark=*, blue] table[x=a, y=b]{\netoutA};
+            \addplot[mark=x, red] table[x=a, y=b]{\netoutB};
+          \end{axis}
+        \end{tikzpicture}  
+  \end{tabular}}
+  \scalebox{.85}{\ref{overhead-analysis}}
+  \caption[Overhead Analysis]{Overhead analysis.}\label{fig:overhead-analysis}
+\end{figure}
+
+As shown in the above \autoref{fig:overhead-analysis}, all metrics demonstrate a consistent linear growth trend with each addition of 100 targets. Initially, the Prometheus Agent exhibits significant memory usage and a higher rate of increase, attributed to its role in scheduling probes, which involves managing numerous scraping jobs and their associated configurations. Therefore, utilizing the memory metrics from the Prometheus Agent for \ac{HPA} is a reasonable choice. Conversely, the behavior of the Blackbox Exporter differs from the Prometheus Agent. It displays a modest upward trend in memory usage alongside more pronounced CPU and network utilization increases. Notably, the growth rates for CPU and network usage are comparable, indicating that the overhead is primarily relevant to network-related tasks. Thus, CPU metrics are suitable as threshold indicators for the Blackbox Exporter. 
+
+\section{Scraping Analysis}
+
+This analysis assesses the efficiency of the Prometheus Agent's scraping approach by tracking the "Network In" metric of the Prober, which can be regarded as an indicator of the traffic generated by the Scheduler's probing requests. The traffic is quantified as the average per minute, with the following figure metrics over 30 minutes: 
 
 \begin{figure}[htpb]
   \centering
@@ -523,8 +698,4 @@ This analysis evaluates the effectiveness of the Prometheus Agent's scraping str
   \caption[Scrape Analysis]{Scrape Analysis.}\label{fig:scrape-analysis}
 \end{figure}
 
-As demonstrated in the \autoref{fig:scrape-analysis}, it is evident that the Blackbox Exporter experiences a more evenly distributed load of requests, in contrast to Amadeus' Prober, which exhibits saw-tooth traffic patterns. This observation suggests that the Prometheus Agent's scraping strategy results in more optimized and evenly balanced network traffic.
-
-
-
-
+As demonstrated in the \autoref{fig:scrape-analysis}, it is evident that there is no zero traffic in the Blackbox Exporter within 30 minutes, in contrast to Amadeus' Prober, which exhibits regular saw-tooth traffic patterns touching the bottom, indicating periodical drops in traffic to zero. This observation suggests that Prometheus Agent spreads scatters across the time interval, resulting in more optimized and spread network traffic. 
