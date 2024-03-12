@@ -3,7 +3,7 @@
 \RequirePackage[l2tabu,orthodox]{nag}
 
 % TODO: decide if one-sided/two-sided
-%\documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
+% \documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
 \documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
 
 % TODO: change citation style in settings
@@ -61,15 +61,21 @@
 \addchap{Abbreviations}
 \begin{acronym}
 	\itemsep-.25\baselineskip
+	\acro{eBPF}[eBPF]{ Extended Berkeley Packet Filter}
+	\acro{ACA}[ACA]{Application Centric Automation}
 	\acro{ACS}[ACS]{Amadeus Cloud Service}
 	\acro{AI}[AI]{Artificial Intelligence}
 	\acro{API}[API]{Application Programming Interface}
+	\acro{CA}[CA]{Certificate authority}
+	\acro{CI}[CI]{Continuous Integration}
+	\acro{CD}[CD]{Continuous Delivery}
 	\acro{CLI}[CLI]{Command-line Interface}
 	\acro{CNCF}[CNCF]{Cloud Native Computing Foundation}
 	\acro{CPU}[CPU]{Central Processing Unit}
 	\acro{CR}[CR]{Custom Resource}
 	\acro{CRs}[CRs]{Custom Resources}
 	\acro{CRD}[CRD]{Custom Resource Definition}
+	\acro{DM}[DM]{Deployment Manager}
 	\acro{DNS}[DNS]{Domain Name System}
 	\acro{EDIFACT}[EDIFACT]{Electronic Data Interchange for Administration, Commerce and Transport}
 	\acro{HPA}[HPA]{Horizontal Pod Autoscaler}
@@ -77,9 +83,12 @@
 	\acro{HTTPS}[HTTPS]{Hypertext Transfer Protocol Secure}
 	\acro{IaC}[IaC]{Infrastructure as Code}
 	\acro{ICMP}[ICMP]{Internet Control Message Protocol}
+	\acro{IP}[IP]{Internet Protocol}
 	\acro{IT}[IT]{Information Technology}
 	\acro{ML}[ML]{Machine Learning}
+	\acro{NRPE}[NRPE]{Nagios Remote Plugin Executor}
 	\acro{OBE}[OBE]{Open Back End}
+	\acro{OSI}[OSI]{Open Systems Interconnection}
 	\acro{PaaS}[PaaS]{Platform as a Service}
 	\acro{QoS}[QoS]{Quality of Service}
 	\acro{SI}[SI]{Service Integration}

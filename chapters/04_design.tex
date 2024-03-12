@@ -5,7 +5,7 @@
 
 \section{Prometheus Operator}
 
-Prometheus Operator is an open-source tool designed to simplify the deployment, configuration, and management of Prometheus components in the Kubernetes ecosystem. Prometheus has grown in popularity due to its effectiveness in cloud monitoring, making it a cornerstone for developers focusing on reliability and performance. The Prometheus Operator, developed under the support of the \ac{CNCF}, offers cloud deployment and management, aligning seamlessly with the principles and practices of cloud-native computing. 
+Prometheus Operator~\parencite{PrometheusOperator} is an open-source tool designed to simplify the deployment, configuration, and management of Prometheus components in the Kubernetes ecosystem. Prometheus~\parencite{PrometheusMonitoringSystem} has grown in popularity due to its effectiveness in cloud monitoring, making it a cornerstone for developers focusing on reliability and performance. The Prometheus Operator, developed under the support of the \ac{CNCF}, offers cloud deployment and management, aligning seamlessly with the principles and practices of cloud-native computing. 
 
 The primary goal of the Prometheus Operator is to make running Prometheus on the cloud platform as straightforward and efficient as possible. It leverages the container orchestrator's \ac{API}s to offer a scalable and highly available solution that fits the dynamic nature of cloud computing. The operator automates the complex processes of deploying, configuring, and managing Prometheus instances, making it easier for teams that don't have deep expertise in monitoring systems. By introducing \ac{CRD}s representing distinct Prometheus components, such as Alertmanager, PrometheusAgent, and Prometheus itself, the integration lets users define their monitoring requirements with YAML configuration files declaratively. 
 
@@ -22,7 +22,7 @@ In conclusion, the Prometheus Operator enhances cloud monitoring by automating t
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
       shorten >=1pt,
-      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!70}\ttfamily},
       node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt, anchor=west}
     ]
@@ -42,8 +42,8 @@ In conclusion, the Prometheus Operator enhances cloud monitoring by automating t
 
     \node (des) [node distance=12em, below=of PA1Z.west, text width=24em, node, dashed, align=left, anchor=west] {The Prometheus Agent achieves sharding on configurations via the "hashmod" relabeling technique. This method involves computing the hash of specified labels, such as URLs. By doing so, the agent could distribute and manage the monitoring load across different instances.};
 
-    \draw[->] (PO) -- node[auto] {watch} (CRDP);
-    \draw[->] (PO) -- node[auto, right, align=center] {generate configurations with\\additional "hashmod" relabeling} (conf1);
+    \draw[->] (PO) -- node[auto] {Watch} (CRDP);
+    \draw[->] (PO) -- node[auto, right, align=center] {Generate configurations with\\additional "hashmod" relabeling} (conf1);
     \draw[->] (PO) -| node[auto, align=center] {} (conf2);
     \draw[<-] (conf1) -- node[auto] {} (PAI1);
     \draw[<-] (conf2) -- node[auto] {} (PAI2);
@@ -53,24 +53,26 @@ In conclusion, the Prometheus Operator enhances cloud monitoring by automating t
   \caption[Prometheus Agent Sharding]{Prometheus Agent Sharding Mechanism.}\label{fig:prometheus-agent-sharding}
 \end{figure}
 
-The Prometheus Agent represents a simplified, focused approach to monitoring distributed systems, particularly in large-scale and cloud-native environments. As a lightweight variant of the Prometheus instance, the Prometheus Agent is designed to be a highly efficient data collector optimized for forwarding metrics to the Prometheus server or a compatible remote receiver. 
+The Prometheus Agent~\parencite{PrometheusAgentSupport} represents a simplified, focused approach to monitoring distributed systems, particularly in large-scale and cloud-native environments. As a lightweight variant of the Prometheus instance, the Prometheus Agent is designed to be a highly efficient data collector optimized for forwarding metrics to the Prometheus server or a compatible remote receiver. 
 
 One of the core advantages of the Prometheus Agent lies in its simplicity. Unlike an entire Prometheus server, which includes data storage, querying, and alerting functionalities, the agent is only responsible for scraping metrics and sending them out. This reduction leads to a smaller memory and CPU footprint, critical in resource-constrained environments, making it ideal for edge computing, microservices architectures, and multi-cluster environments. 
 
 In addition, the Prometheus Agent maintains excellent compatibility with the Prometheus ecosystem. This is a crucial consideration for organizations invested in Prometheus-based monitoring. It can scrape metrics in the same Prometheus exposition format, ensuring users integrate the agent seamlessly into the existing monitoring infrastructure. Furthermore, the agent's ability to integrate with service discovery mechanisms in orchestration platforms ensures its dynamically adapting to changes in the monitored environment. 
 
-Finally, the Prometheus Agent enhances the scalability and reliability of monitoring systems. The Prometheus Agent can achieve more efficient horizontal scaling depending on scrape configurations as shown in \autoref{fig:prometheus-agent-sharding} and focusing on scraping and forwarding metrics. This is particularly beneficial in large-scale environments, where a central Prometheus server can aggregate and process data from multiple agents, reducing duplication of storage and computation. Also, this architecture enhances the resilience of the monitoring system, as the failure of a single agent has a limited impact, ensuring reliable monitoring of the infrastructure. 
-
-Overall, the Prometheus Agent is an inevitable addition to the design of the active monitoring platform, offering a scalable and reliable solution for the existing monitoring system.
+In conclusion, the Prometheus Agent improves the scalability and reliability of monitoring in large-scale environments, where a central Prometheus server can aggregate and process data from multiple agents. As illustrated in~\autoref{fig:prometheus-agent-sharding}, it achieves this by enabling more efficient horizontal scaling based on scrape configurations, focusing on scraping and forwarding metrics, thus reducing the duplication of storage and computation. Moreover, this highly available architecture boosts the monitoring system's resilience and reliability, as a single agent's failure could have an impact. Overall, the Prometheus Agent is an essential addition to the architecture of the active monitoring platform, offering a scalable and reliable solution for the existing monitoring system. 
 
 \section{Blackbox Exporter and Load Balancing}
+
+Blackbox Exporter~\parencite{BlackboxExporter}, a probing tool for the Prometheus monitoring system, is essential for assessing the performance and availability of services in network environments. It plays an important role in monitoring and diagnosing systems designed for probing endpoints over various protocols like \ac{HTTP}/\ac{HTTPS}, \ac{DNS}, \ac{TCP}, and \ac{ICMP}. 
+
+In complex infrastructures hosting multiple services, it is crucial to integrate the Blackbox Exporter with \ac{OSI} Layer 7 load-balancing solutions such as built-in Load Balancers, OpenShift Routes, Kubernetes Ingress, or \ac{OSI} Layer 3 and 4 solutions like the Service, as depicted in \autoref{fig:openshift-load-balancing}. This integration enables scalable monitoring, ensuring the reliability of the monitoring system as the service count increases. 
 
 \begin{figure}[htpb]
   \centering
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
       shorten >=1pt,
-      zonetag/.style={align=center, node distance=1em, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+      zonetag/.style={align=center, node distance=1em, font=\fontsize{10}{10}\color{black!70}\ttfamily},
       node/.style={draw, node distance=3em, text width=4em, minimum height=3em, align=center, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt}
     ]
@@ -92,12 +94,51 @@ Overall, the Prometheus Agent is an inevitable addition to the design of the act
   \caption[OpenShift Load Balancing]{Route and Service are responsible for Load Balancing in Openshift.}\label{fig:openshift-load-balancing}
 \end{figure}
 
-Blackbox Exporter, a probing tool for the Prometheus monitoring system, is essential for assessing the performance and availability of services in network environments. It plays an important role in monitoring and diagnosing systems designed for probing endpoints over various protocols like \ac{HTTP}/\ac{HTTPS}, \ac{DNS}, \ac{TCP}, and \ac{ICMP}. 
+Furthermore, automatic horizontal scaling significantly enhances resource utilization. Load balancers direct traffic to Blackbox Exporter instances efficiently, adjusted by an orchestrator to prevent resource overuse or depletion. This ensures high availability and fault tolerance, as traffic is rerouted to operational instances in case of failure, ensuring continuous monitoring. Additionally, in dynamic cloud-native environments, this setup facilitates native dynamic service discovery, minimizing manual configuration and simplifying management.
 
-In complex infrastructures hosting multiple services, it is crucial to integrate the Blackbox Exporter with OSI Layer 7 load-balancing solutions such as built-in Load Balancers, OpenShift Routes, Kubernetes Ingress, or OSI Layer 3 and 4 solutions like the Service, as depicted in Figure \autoref{fig:openshift-load-balancing}. This integration enables scalable and efficient monitoring, ensuring the reliability of the monitoring system as the service count increases. 
+In conclusion, integrating the Blackbox Exporter with load-balancing solutions enhances scalability and reliability in performance monitoring. Load balancing evenly distributes monitoring loads, leading to more accurate performance metrics and easier issue identification. This integration is essential for effectively maintaining network services and is crucial in large-scale deployment and management. 
 
-Moreover, combined with automatic horizontal scaling, resource utilization efficiency could be significantly enhanced. Load balancers optimize traffic flow to the Blackbox Exporter instances; the orchestrator scales the number of the Blackbox Exporter instances, ensuring that the monitoring process does not overuse or run out of resources. 
+\section{Argo CD and GitOps}
 
-Another benefit is the high availability and fault tolerance. If an exporter instance fails, the load balancer can redirect traffic to other operational instances, ensuring uninterrupted monitoring. On the other hand, in cloud-native environments where services often change, this setup supports dynamic service discovery natively, reducing the need for manual configuration and simplifying overall management. 
+Argo CD~\parencite{ArgoCDDeclarative}, the declarative GitOps~\parencite{WeaveworksWeavegitopsWeave} continuous delivery tool for Kubernetes, automates the deployment of applications, ensuring they match the desired state configurations stored in Git repositories. GitOps emphasizes infrastructure automation and a pull-based deployment strategy via Git, improving deployment transparency, security, and efficiency. 
 
-In conclusion, integrating the Blackbox Exporter with load-balancing solutions enhances scalability and reliability in performance monitoring, simplifying management. Load balancing evenly distributes monitoring loads, leading to more accurate performance metrics and easier issue identification. This integration is essential for effective maintenance of network services, crucial in large-scale deployment and management.
+Integrating Argo CD and GitOps for managing \ac{CRD}s for PrometheusAgent and Probe on the OpenShift Platform can simplify the deployment and update processes as shown in the \autoref{fig:gitops}. Users commit configuration changes to the Git repository, serving as the single truth source. By monitoring this repository, Argo CD automatically detects changes and communicates with the OpenShift API to update the \ac{CRD}s accordingly, maintaining a continuous synchronization between the desired state in Git and the actual state in the cluster. 
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!70}\ttfamily},
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+    ]
+
+    \node (user) [node distance=5em, text width=2em, node, circle] {User};
+    \node (git) [node distance=5em, text width=2em, node, diamond, right=of user, font=\bfseries] {Git};
+    \node (argo) [node distance=7em, text width=6em, node, right=of git, font=\bfseries] {Argo CD};
+
+    \node (api) [node distance=3em, text width=8em, node, below left=of argo] {OpenShift API};
+
+    \node (CRDP) [node distance=3em, text width=12em, node, below=of api] {CRD\\PrometheusAgent/Probe};
+    % \node (CRDPA) [node distance=3em, text width=8em, node, ellipse, fill=blue!10, left=of CRDP] {CRD\ PrometheusAgent};
+    \node (UZ) [zone, dashed, fit={(CRDP)}] {};
+    \node (U) [node distance=6pt, below=of UZ.south, zonetag] {Active Monitoring Platform};
+
+    \node (CZ) [zone, fit={(api) (CRDP) (UZ) (U)}] {};
+    \node (C)[node distance=6pt, below=of CZ.south, zonetag] {OpenShift Platform};
+
+    \path[->] (user) edge node[auto, font=\small] {PR merge} (git);
+    \path[<-] (git) edge node[auto, font=\small] {Pull Changes} (argo);
+    \path[->] (api) edge node[auto, font=\small] {Apply} (CRDP);
+    \draw[->] (argo) |- node[auto, font=\small, right]{Webhook Event} (api);
+    % \path[->] (api) edge node[auto] {apply} (CRDPA);
+  \end{tikzpicture}
+  \caption[Utilizing GitOps to manage CRDs]{Utilizing GitOps to manage \ac{CRD}s.}\label{fig:gitops}
+\end{figure}
+
+This methodology presents several benefits. Firstly, it enhances security by reducing direct access to the OpenShift environment, as changes are pulled from the repository rather than pushed from external sources. Secondly, it improves deployments' reliability and stability by ensuring they are always aligned with the version-controlled configurations. Additionally, it facilitates an auditable deployment process, enabling easy tracking and rollback of changes. 
+
+However, employing GitOps to manage configurations for Prometheus Agent and Probe has challenges. The learning curve for understanding and setting up GitOps workflows can be steep initially. Moreover, relying on a single source of truth requires strict repository management and version control practices to prevent configuration drift and ensure the repository accurately reflects the deployed environment's state. 
+
+Applying Argo CD and GitOps principles to manage CRDs for PrometheusAgent and Probe within the OpenShift Platform offers a powerful approach to automating deployments. By leveraging Git as the basis of the deployment strategy, users can achieve a more secure, reliable, and transparent infrastructure management process. Despite some challenges, the benefits of adopting a GitOps approach, particularly in complex cloud-native environments, are worthwhile for its value in facilitating efficient and secure deployment workflows. 

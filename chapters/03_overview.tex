@@ -11,77 +11,79 @@ To ensure scalability, the platform should examine the bottleneck and consider t
 
 Reliability decides the trustworthiness of the Active Monitoring Platform, and the critical point to assure reliability is fault tolerance. To elaborate, as a prober deployed responsible for probing targets is down, another prober could take over and continue operating. 
 
-For cloud readiness, the design must be compatible with cloud infrastructure. Amadeus operates thousands of applications across numerous OpenShift clusters, necessitating that the Active Monitoring Platform be tailored for cloud platforms. Additionally, artifact versioning is crucial in cloud readiness, offering a centralized and managed system package for cloud deployment and the prerequisite for GitOps. 
+For cloud readiness, the design must be compatible with cloud infrastructure. Amadeus operates thousands of applications across numerous OpenShift~\parencite{RedHatOpenShift} clusters, necessitating that the Active Monitoring Platform be tailored for cloud platforms. Additionally, artifact versioning is crucial in cloud readiness, offering a centralized and managed system package for cloud deployment and the prerequisite for GitOps~\parencite{WeaveworksWeavegitopsWeave}. 
 
 Overall, the proposed design addresses the demands for active monitoring among thousands of applications deployed and distributed in dozens of clusters. With a user-friendly and efficient solution, the existing Amadeus Observability Platform could seamlessly integrate the active monitoring results and achieve high availability and efficiency. 
 
-The current system for active monitoring features lightweight scheduling and probing with an operator managing configurations as \ac{CRD}s. Substituting the scheduler with the Prometheus Agent is critical, improving efficiency with the remote write feature and decreasing peak requests by spreading requests over a scrape interval. Next, employing the Prometheus Operator breeds further enhancements, including deployment management, automatic scalability, configuration sharding, etc. In brief, implementing the above two aspects successfully meets Amadeus's active monitoring goals. 
+The current system for active monitoring features lightweight scheduling and probing with an operator managing configurations as \ac{CRD}s. Substituting the scheduler with the Prometheus Agent~\parencite{PrometheusAgentSupport} is critical, improving efficiency with the remote write feature and decreasing peak requests by spreading requests over a scrape interval. Next, employing the Prometheus Operator~\parencite{PrometheusOperator} breeds further enhancements, including deployment management, automatic scalability, configuration sharding, etc. In brief, implementing the above two aspects successfully meets Amadeus's active monitoring goals. 
 
 \section{System Overview}
 
-The design proposal utilizes container orchestrators, including Kubernetes and OpenShift. Within Amadeus, the OpenShift Container Platform is predominantly employed, often set up as separate and autonomous clusters. The system design described in the upcoming paragraphs is illustrated in \autoref{fig:system-design}. 
+The design proposal utilizes container orchestrators, including Kubernetes~\parencite{ProductionGradeContainerOrchestration} and OpenShift. Within Amadeus, the OpenShift Container Platform is predominantly employed, often set up as separate and autonomous clusters. The system design described in the upcoming paragraphs is illustrated in \autoref{fig:system-design}. 
 
 \begin{figure}[htpb]
   \centering
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
       shorten >=1pt,
-      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
-      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
-      zone/.style={draw=black!60, inner sep=8pt, anchor=west}
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!70}\ttfamily},
+      node/.style={draw, align=center, minimum height=3em, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt}
     ]
 
-    \node (LB1) [node distance=2cm, below=of C, text width=6em, node] {Load\\Balancer};
-    \node (LB2) [node distance=3cm, left=of LB1, text width=6em, node] {Load\\Balancer};
-    \node (Prober1) [node distance=3cm, below=of LB1.west, text width=6em, node] {TCIL\\Probers};
-    \node (Prober2) [node distance=3cm, below=of LB2.west, text width=6em, node] {Blackbox\\Exporters};
-    \node (LB1Z) [zone, dashed, rounded corners, fit={(LB1) (Prober1)}] {};
-    \node (LB2Z) [zone, dashed, rounded corners, fit={(LB2) (Prober2)}] {};
-    \node (PO) [node distance=5cm, right=of LB1.west, text width=6em, node] {Prometheus\\Operator};
-    \node (PA) [node distance=3cm, below=of PO.west, text width=6em, node] {Prometheus\\Agents};
-    \node (PAZ) [zone, dashed, rounded corners, fit={(PA)}] {};
-    \node (CRDP) [node distance=7em, above=of PO.base, text width=12em, node, anchor=base] {CRD\\PrometheusAgent/Probe};
+    \node (PO) [node distance=5cm, text width=6em, node] {Prometheus\\Operator};
+    \node (PA) [node distance=2cm, below=of PO, text width=6em, node] {Prometheus\\Agents};
+    % \node (PAZ) [zone, dashed, rounded corners, fit={(PA)}] {};
+    \node (CRDP) [node distance=3cm, left=of PO, text width=12em, node] {CRD\\PrometheusAgent/Probe};
     % \node (CRDPA) [node distance=5cm, left=of CRDP, text width=10em, node, fill=blue!10] {CRD\ PrometheusAgent};
-    \node (UZ) [zone, dashed, fit={(LB1) (LB2) (Prober1) (Prober2) (LB1Z) (LB2Z) (PO) (PA) (PAZ) (CRDP)}] {};
-    \node (U) [node distance=6pt, above=of UZ.north west, zonetag, anchor=west] {Active Monitoring Platform};
 
-    \node (TS1) [node distance=3cm, below=of Prober1.west, text width=6em, node] {Target\\Service\ 1};
+    \node (LB1) [node distance=2cm, left=of PA, text width=6em, node] {Load\\Balancer};
+    \node (LB2) [node distance=1cm, left=of LB1, text width=6em, node] {Load\\Balancer};
+    \node (Prober1) [node distance=1cm, below=of LB1, text width=6em, node] {TCIL\\Probers};
+    \node (Prober2) [node distance=1cm, left=of Prober1, text width=6em, node] {Blackbox\\Exporters};
+    % \node (LB1Z) [zone, dashed, rounded corners, fit={(LB1) (Prober1)}] {};
+    % \node (LB2Z) [zone, dashed, rounded corners, fit={(LB2) (Prober2)}] {};
+    
+    \node (UZ) [zone, dashed, fit={(LB1) (LB2) (Prober1) (Prober2) (PO) (PA) (CRDP)}] {};
+    \node (U) [node distance=6pt, above=of UZ.north west, zonetag, anchor=west] {Proposed Active Monitoring Platform};
+
+    \node (TS1) [node distance=2cm, below=of Prober1, text width=6em, node] {Service\ B};
     \node (C1Z) [zone, dashed, fit={(TS1)}] {};
-    \node (C1) [node distance=2pt, below=of C1Z, zonetag] {Product A};
+    \node (C1) [node distance=2pt, below=of C1Z, zonetag] {Namespace B};
 
-    \node (TS2) [node distance=3cm, below=of Prober2.west, text width=6em, node] {Target\\Service\ 2};
+    \node (TS2) [node distance=2cm, below=of Prober2, text width=6em, node] {Service\ A};
     \node (C2Z) [zone, dashed, fit={(TS2)}] {};
-    \node (C2) [node distance=2pt, below=of C2Z, zonetag] {Product B};
+    \node (C2) [node distance=2pt, below=of C2Z, zonetag] {Namespace A};
 
-    \node (TR) [node distance=3cm, below=of PA.west, text width=6em, node] {Thanos\\Receive};
+    \node (TR) [node distance=2cm, right=of TS1, text width=6em, node] {Thanos\\Receive};
     \node (GZ) [zone, dashed, fit={(TR)}] {};
     \node (G) [node distance=2pt, below=of GZ, zonetag] {Amadeus Observability Platform};
 
     \node (CZ) [zone, fit={(U) (LB1) (LB2) (Prober1) (Prober2) (PO) (PA) (CRDP) (UZ) (G) (GZ) (TR) (TS1) (TS2) (C1) (C1Z)}] {};
-    \node (C)[node distance=6pt, above=of CZ.north west, zonetag, anchor=west] {OpenShift Cluster};
+    \node (C)[node distance=6pt, above=of CZ.north west, zonetag, anchor=west] {OpenShift Platform};
 
     \path[->]
-      (PO) edge node[auto] {manage} (PA)
+      (PO) edge node[auto, font=\small] {manage} (PA)
       % (PO) edge node[auto, right] {} (CRDPA)
-      (PO) edge node[auto, right] {watch} (CRDP)
-      (PA) edge node[auto, right] {remote write} (TR)
-      (PA) edge node[auto, sloped] {scrape} (LB1)
-      (PA) edge node[auto, sloped] {scrape} (LB2)
-      (LB1) edge node[auto] {} (Prober1)
-      (LB2) edge node[auto] {} (Prober2)
-      (Prober1) edge node[auto] {probe} (TS1)
-      (Prober2) edge node[auto] {probe} (TS2);
+      (PO) edge node[auto, font=\small, above] {watch} (CRDP)
+      (PA) edge node[auto, font=\small, right] {remote write} (TR)
+      (PA) edge[bend left] node[auto, font=\small, sloped] {scrape} (LB1)
+      (PA) edge[bend right] node[auto, font=\small, sloped] {scrape} (LB2)
+      (LB1) edge node[auto, font=\small] {} (Prober1)
+      (LB2) edge node[auto, font=\small] {} (Prober2)
+      (Prober1) edge node[auto, font=\small] {probe} (TS1)
+      (Prober2) edge node[auto, font=\small] {probe} (TS2);
   \end{tikzpicture}
   \caption[System Design - Prometheus Operator, Prometheus Agent and Probers]{System Design with Prometheus Operator, Prometheus Agent and Probers.}\label{fig:system-design}
 \end{figure}
 
-Inside the cluster, a slightly modified Prometheus Operator would be installed, responsible for deploying and managing Promenteus Agents and probe configurations. Next, Blackbox Exporters and customized probers like the \ac{TCIL} Pinger, which is still in development, would be deployed with load balancers, leveraging horizontal scalability for better load distribution. 
+Inside the cluster, a slightly modified Prometheus Operator would be installed, and the Operator would be responsible for deploying and managing Promenteus Agents and probe configurations. Next, Blackbox Exporters and customized probers like the \ac{TCIL} Prober would be deployed with load balancers, leveraging automated horizontal scalability for better load distribution. 
 
 At first, the deployed Prometheus Operator will monitor the \ac{CRD}s created for deploying Prometheus Agents and probe configurations. It will maintain its state, offering scaling or sharding as required. Subsequently, the Prometheus Agent will handle scheduling probes and remotely transmit metrics to the Prometheus remote endpoint or Thanos Receive. 
 
 Secondly, deploying probers with the load balancer enables the Prometheus Agent to target the same host, leveraging load distribution and enhancing reliability without extra effort. Additionally, with Kubernetes or OpenShift, the inherent scalability and the ingress or load balancer provide valuable and reliable support, significantly boosting this design. 
 
-Finally, users with active monitoring requirements across various clusters and namespaces can leverage the official \ac{CRD}: Probe to customize their specific requests. In summary, this system architecture offers a more efficient, seamlessly integrated, and highly available solution for active monitoring for the Amadeus Observability Platform. 
+Finally, users with active monitoring requirements across various clusters and namespaces can leverage the official \ac{CRD}: Probe to customize their specific requests. In summary, this system architecture meets the needs of the Amadeus Observability Platform, offering an efficient, seamlessly integrated, and highly available solution for active monitoring. 
 
 \section{System Workflow}
 
@@ -196,45 +198,51 @@ Secondly, the workflow to create or modify probe configurations is similar to th
 
 Lastly, the third workflow is fully automatic, carrying out probes over different kinds of targets and operated by the Prometheus Agent as in \autoref{fig:system-workflow-scheduling}. With proper configurations of Probes, which the Prometheus Operator should load with the \ac{CR}: Probe as mentioned in the previous paragraph, The Prometheus Agent would keep scraping the Probe with specified labels, parameters, modules, etc., and the Prober would probe targets accordingly, and then respond to the Prometheus Agent with collected raw information. Finally, after some operation on the metrics like relabeling or filtering, the Prometheus Agent sends these data to the Thanos Receive via remote write. 
 
-\section{Integration with GitOps}
+\section{System Deployment}
 
-\begin{figure}[htpb]
-  \centering
-  % This should probably go into a file in figures/
-  \begin{tikzpicture}[
-      shorten >=1pt,
-      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
-      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
-      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
-    ]
+The design effectively meets all requirements for active monitoring so far. However, Amadeus's large number of clusters and namespaces, along with the varied monitoring strategies employed by a wide range of developers and users on the Active Monitoring Platform, presents a significant challenge in managing the platform's deployment and \ac{CR}s. To address the needs of developers and simplify project management, Amadeus utilizes a variety of \ac{CI}/\ac{CD} tools, including Bitbucket~\parencite{atlassianBitbucketGitSolution}, GitHub~\parencite{BuildSoftwareBetter}, Jenkins~\parencite{Jenkins}, Argo CD~\parencite{ArgoCDDeclarative}, as well as self-developed tools like the \ac{ACA} and the \ac{DM}, which are leveraged for their flexibility and integration capabilities. 
 
-    \node (user) [node distance=5em, text width=2em, node, circle] {User};
-    \node (git) [node distance=3em, text width=2em, node, diamond, below=of user, font=\bfseries] {Git};
-    \node (argo) [node distance=3em, text width=3em, node, below=of git, font=\bfseries] {Argo};
+For \ac{CI}, Jenkins is extensively used across numerous projects at Amadeus to automate the build process, significantly reducing bottlenecks~\parencite{elazharyUncoveringBenefitsChallenges2022}. Jenkins enables users to customize the integration pipeline, automating software development's build, test, and integration phases. It also offers comprehensive support for \ac{CD}, including artifact archiving and deployment management across various platforms. However, the complexity of Jenkins pipeline scripts can present a steep learning curve for newcomers, and crafting scripts for sophisticated pipelines might be challenging. 
 
-    \node (api) [node distance=3em, text width=8em, node, below=of argo] {OpenShift API};
+Argo CD realizes the GitOps~\parencite{WeaveworksWeavegitopsWeave} principle, an innovative methodology aimed at automating cloud infrastructure management, leveraging the capabilities of Git repositories as the single source of truth for system states and configurations. This approach ties the Git version control system directly to the deployment and management processes, enabling automatic reconfiguration and synchronization of the infrastructure based on changes committed to the Git repository~\parencite{beetzGitOpsEvolutionDevOps2022}. By doing so, GitOps extends the \ac{IaC} principles by ensuring that all system configurations are maintained and version-controlled within a Git repository. 
 
-    \node (CRDP) [node distance=3em, text width=12em, node, below=of api] {CRD\\PrometheusAgent/Probe};
-    % \node (CRDPA) [node distance=3em, text width=8em, node, ellipse, fill=blue!10, left=of CRDP] {CRD\ PrometheusAgent};
-    \node (UZ) [zone, dashed, fit={(CRDP)}] {};
-    \node (U) [node distance=6pt, below=of UZ.south, zonetag] {Active Monitoring Platform};
+The project strategically utilizes Jenkins for \ac{CI} and Argo CD for \ac{CD}, harnessing their respective strengths. Jenkins facilitates the automation of the build, test, and integration phases, efficiently managing developmental bottlenecks, while Argo CD, embodying the GitOps principle, streamlines cloud infrastructure management via Git integration. This combination ensures an efficient and auditable deployment process, not only addressing the automation of deployment, also benefiting the deployment and management of monitoring configuration via \ac{CR}s.
 
-    \node (CZ) [zone, fit={(api) (CRDP) (UZ) (U)}] {};
-    \node (C)[node distance=6pt, below=of CZ.south, zonetag] {OpenShift Cluster};
+% GitOps~\parencite{WeaveworksWeavegitopsWeave} is a new approach to automate the management of the cloud infrastructure. Specifically, GitOps employs the Git repository, based on its modifications, triggering automatic reconfiguration and synchronization of the infrastructure as shown in \autoref{fig:gitops}~\parencite{beetzGitOpsEvolutionDevOps2022}. Therefore, GitOps could also achieve \ac{IaC} by managing configurations in a Git repository. 
 
-    \path[->] (user) edge node[auto] {PR merge} (git);
-    \path[<-] (git) edge node[auto] {pull changes} (argo);
-    \path[->] (argo) edge node[auto] {webhook event} (api);
-    \path[->] (api) edge node[auto] {apply} (CRDP);
-    % \path[->] (api) edge node[auto] {apply} (CRDPA);
-  \end{tikzpicture}
-  \caption[Utilizing GitOps to manage CRDs]{Utilizing GitOps to manage \ac{CRD}s.}\label{fig:gitops}
-\end{figure}
+% \begin{figure}[htpb]
+%   \centering
+%   % This should probably go into a file in figures/
+%   \begin{tikzpicture}[
+%       shorten >=1pt,
+%       zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily},
+%       node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+%       zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+%     ]
 
-So far, the design successfully addresses all requirements regarding active monitoring. However, Amadeus has plenty of clusters and namespaces, and numerous developers or users would deploy their own \ac{CR} in their clusters and namespaces. So, managing deployed \ac{CR}s becomes another crucial issue. 
+%     \node (user) [node distance=5em, text width=2em, node, circle] {User};
+%     \node (git) [node distance=3em, text width=2em, node, diamond, below=of user, font=\bfseries] {Git};
+%     \node (argo) [node distance=3em, text width=6em, node, below=of git, font=\bfseries] {Argo CD};
 
-GitOps is a new approach to automate the management of the cloud infrastructure. Specifically, GitOps employs the Git repository, based on its modifications, triggering automatic reconfiguration and synchronization of the infrastructure as shown in \autoref{fig:gitops}. Therefore, GitOps could also achieve \ac{IaC} by managing configurations in a Git repository. 
+%     \node (api) [node distance=3em, text width=8em, node, below=of argo] {OpenShift API};
 
-\section{User Interface with Grafana}
+%     \node (CRDP) [node distance=3em, text width=12em, node, below=of api] {CRD\\PrometheusAgent/Probe};
+%     % \node (CRDPA) [node distance=3em, text width=8em, node, ellipse, fill=blue!10, left=of CRDP] {CRD\ PrometheusAgent};
+%     \node (UZ) [zone, dashed, fit={(CRDP)}] {};
+%     \node (U) [node distance=6pt, below=of UZ.south, zonetag] {Active Monitoring Platform};
 
-The implementations described above enable users to achieve scalable, reliable, and cloud-ready active monitoring. However, non-visualized results can be challenging for intuitive human understanding. Therefore, a vital final step involves using Grafana, an open-source analytics and visualization project, to create a dedicated dashboard for active monitoring. Since the Amadeus Observability Platform has already deployed the complete Grafana web application, no further deployment is necessary, apart from configuring the dashboard.
+%     \node (CZ) [zone, fit={(api) (CRDP) (UZ) (U)}] {};
+%     \node (C)[node distance=6pt, below=of CZ.south, zonetag] {OpenShift Cluster};
+
+%     \path[->] (user) edge node[auto, font=\small] {PR merge} (git);
+%     \path[<-] (git) edge node[auto, font=\small] {pull changes} (argo);
+%     \path[->] (argo) edge node[auto, font=\small] {webhook event} (api);
+%     \path[->] (api) edge node[auto, font=\small] {apply} (CRDP);
+%     % \path[->] (api) edge node[auto] {apply} (CRDPA);
+%   \end{tikzpicture}
+%   \caption[Utilizing GitOps to manage CRDs]{Utilizing GitOps to manage \ac{CRD}s.}\label{fig:gitops}
+% \end{figure}
+
+% \section{User Interface with Grafana}
+
+% The implementations described above enable users to achieve scalable, reliable, and cloud-ready active monitoring. However, non-visualized results can be challenging for intuitive human understanding. Therefore, a vital final step involves using Grafana, an open-source analytics and visualization project, to create a dedicated dashboard for active monitoring. Since the Amadeus Observability Platform has already deployed the complete Grafana web application, no further deployment is necessary, apart from configuring the dashboard.

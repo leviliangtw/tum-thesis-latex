@@ -3,14 +3,13 @@
 
 \chapter{Evaluation}\label{chapter:evaluation}
 
-This evaluation study seeks to determine if the design leads to a tolerable overhead compared to the original in-house monitoring application that Amadeus developed. Both applications operate on a private OpenShift Cluster managed by the Amadeus \ac{SRE} team. The primary metrics collected include Openshift Metrics for \ac{CPU}, memory, and network, gathered using cAdvisor or the Network Metrics Daemon~\parencite{redhatAssociatingSecondaryInterfaces}~\parencite{redhatPrometheusClusterMonitoring}. Subsequent sections will outline the evaluation methodology and present the findings from the system analysis.
-
+This evaluation study seeks to determine if the design leads to a tolerable overhead compared to the original in-house monitoring application that Amadeus developed. Both applications operate on a private OpenShift~\parencite{RedHatOpenShift} Cluster managed by the Amadeus \ac{SRE} team. The primary metrics collected include Openshift Metrics for \ac{CPU}, memory, and network, gathered using cAdvisor~\parencite{GoogleCadvisor2024} or the Network Metrics Daemon~\parencite{OpenshiftNetworkmetricsdaemon2023}. Subsequent sections will outline the evaluation methodology and present the findings from the system analysis. 
 
 \section{Methodology}
 
 The evaluation focuses on analyzing system behaviors concerning \ac{CPU} utilization, memory utilization, and network traffic. These three entities are critical for developers to gain insights into system overhead and performance intuitively. Understanding how a system allocates and utilizes its resources, along with how it communicates internally and externally, provides a comprehensive view of its efficiency and scalability.
 
-\subsection{\ac{CPU} Utilization}
+\subsection{CPU Utilization}
 
 For \ac{CPU} utilization analysis within a pod, the metric "container\_cpu\_usage\_seconds\_total" will be utilized. This metric measures the cumulative \ac{CPU} time consumed by a container in seconds. The methodology involves:
 
@@ -698,4 +697,77 @@ This analysis assesses the efficiency of the Prometheus Agent's scraping approac
   \caption[Scrape Analysis]{Scrape Analysis.}\label{fig:scrape-analysis}
 \end{figure}
 
-As demonstrated in the \autoref{fig:scrape-analysis}, it is evident that there is no zero traffic in the Blackbox Exporter within 30 minutes, in contrast to Amadeus' Prober, which exhibits regular saw-tooth traffic patterns touching the bottom, indicating periodical drops in traffic to zero. This observation suggests that Prometheus Agent spreads scatters across the time interval, resulting in more optimized and spread network traffic. 
+As demonstrated in the \autoref{fig:scrape-analysis}, it is evident that there is no zero traffic in the Blackbox Exporter within 30 minutes, in contrast to Amadeus' Prober, which exhibits regular saw-tooth traffic patterns touching the bottom, indicating periodical drops in traffic to zero. This observation suggests that Prometheus Agent scatters traffic across the time interval, resulting in more optimized and spread network traffic. 
+
+\section{Metrics Analysis}
+
+In addition to the overall system performance analysis, the metrics returned by probes from the Blackbox Exporter offer crucial insights for users investigating the root cause of incidents or other unusual occurrences. Typically, users rely on the "probe\_success" metric to assess the health of targeted services. For more detailed analysis, they can examine metrics such as "probe\_http\_status\_code," "probe\_http\_version," and "probe\_http\_content\_length" to check the HTTP status, version, and response length, among other details. 
+
+Furthermore, the "probe\_http\_duration\_seconds" metric is valuable for diagnosing issues or identifying unexpected failures. This compound metric breaks down the duration of an \ac{HTTP} connection into five phases: resolve, connect, tls, processing, and transfer, each highlighting a different stage of the \ac{HTTP} request. Consider the example figure below for an actual incident: 
+
+\begin{figure}[htpb]
+  \centering
+  \pgfplotstableset{col sep=&, row sep=\\}
+  % This should probably go into a file in data/
+  \pgfplotstableread{
+    Id  & Label       & Success     & Failed TLS    & Status 404    & Timeout  \\
+    0   & resolve     & 1.56214     & 44.058436     & 1.0688661     & 2.37115   \\
+    1   & connect     & 46.294882   & 0             & 3.583154      & 0         \\
+    2   & tls         & 70.013283   & 0             & 0             & 0         \\
+    3   & processing  & 51.703501   & 0             & 10.121488     & 0         \\
+    4   & transfer    & 0.230624    & 0             & 0.283126      & 0         \\
+  }\datatable
+
+  % This should probably go into a file in figures/
+  \scalebox{.85}{\begin{tikzpicture}
+    \begin{axis}[
+        ymin=0,
+        grid,
+        thick,
+        width=10cm,
+        ylabel=Time (milliseconds),
+        xlabel=HTTP/HTTPS Request Phases,
+        legend style={legend pos=north east},
+        legend cell align={left},
+        xtick=data,
+        xticklabels={resolve, connect, tls, processing, transfer}
+      ]
+      \addlegendentry{Success};
+      \addlegendentry{Status 404};
+      % \addlegendentry{Failed TLS};
+      \addlegendentry{Timeout};
+      \addplot[mark=*, green] table [y=Success] {\datatable};
+      \addplot[mark=o, blue] table [y=Status 404] {\datatable};
+      % \addplot[mark=*, orange] table [y=Failed TLS] {\datatable};
+      \addplot[mark=x, red] table [y=Timeout] {\datatable};
+    \end{axis}
+  \end{tikzpicture}
+  }
+  \caption[Metrics Analysis]{Metrics Analysis.}\label{fig:metrics-analysis}
+\end{figure}
+
+\autoref{fig:metrics-analysis} illustrates three probes, each capturing distinct metrics. In the successful case, all phases display non-zero values, indicating a seamless progression through each phase of the \ac{HTTPS} request, although the transfer phase shows a small value. The blue line represents a successful \ac{HTTP} request that, however, results in a status code 404, with the absence of a value in the \ac{TLS} phase subtly confirming the request's purely \ac{HTTP} nature without redirection to \ac{HTTPS}. On the other hand, the Timeout probe reveals activity solely in the "resolve" phase, suggesting it stalled post-domain name resolution before connection establishment, hinting at a bottleneck impeding further progress. 
+
+In summary, the Blackbox Exporter offers more than probe results; it provides users with various metrics for conditional judgment and troubleshooting. These metrics enable users to verify the \ac{TLS} version, check the \ac{IP} protocol, and even validate the \ac{CA} certificate. Additionally, the detailed measurement of \ac{HTTP} request durations enhances observability over targeted services, yielding more profound insights into the monitoring process. 
+
+% probe_dns_lookup_time_seconds 0.002900121
+% probe_duration_seconds 30.000655205
+% probe_failed_due_to_regex 0
+% probe_http_duration_seconds{phase="connect"} 0
+% probe_http_duration_seconds{phase="processing"} 0
+% probe_http_duration_seconds{phase="resolve"} 0.002900121
+% probe_http_duration_seconds{phase="tls"} 0
+% probe_http_duration_seconds{phase="transfer"} 0
+
+
+% probe_ip_addr_hash 2.331439794e+09
+% probe_http_redirects 0
+% probe_http_ssl 0
+% probe_http_version 0
+% probe_ip_protocol 4
+
+% probe_http_uncompressed_body_length 0
+% probe_http_content_length 0
+% probe_http_status_code 0
+
+% probe_success 0

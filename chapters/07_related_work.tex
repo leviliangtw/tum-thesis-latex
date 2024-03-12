@@ -3,21 +3,70 @@
 
 \chapter{Related Work}\label{chapter:related_work}
 
-Modern IT infrastructure management, monitoring, and analytics platforms ensure system reliability and performance. Some industries, like Amadeus, design and customize their solution, while some employ mature commercial, robust solutions from renowned enterprises such as Datadog. The upcoming section will introduce two representative solutions relative to active monitoring: the solution developed and used internally by Amadeus since 2021 and another solution driven by Datadog's synthetic monitoring~\parencite{datadogSyntheticMonitoring}. 
+% Modern IT infrastructure management, monitoring, and analytics platforms ensure system reliability and performance. Some industries, like Amadeus, design and customize their solution, while some employ mature commercial, robust solutions from renowned enterprises such as Datadog. The upcoming section will introduce two representative solutions relative to active monitoring: the solution developed and used internally by Amadeus since 2021 and another solution driven by Datadog's synthetic monitoring~\parencite{CloudMonitoringService}. 
 
-\section{Amadeus' Active Monitoring}
+% \section{Amadeus' Active Monitoring}
+
+% Building upon the foundational aspects of modern IT infrastructure management, monitoring, and analytics platforms are pivotal in maintaining system reliability and performance. This importance is underscored in varied industry approaches to infrastructure monitoring, where companies like Amadeus opt for designing and customizing their solutions, while others prefer mature, commercial solutions from established entities such as Datadog. The diversity in monitoring solutions highlights the broad spectrum of needs and strategies within the IT sector to ensure optimal performance and reliability of systems. 
+
+In the rapidly evolving landscape of IT infrastructure, the appearance of cloud computing has fundamentally reshaped the demand for effective monitoring and analytics platforms. These platforms are essential for maintaining system reliability and performance in an increasingly complex environment. The shift towards cloud services involves scalable and dynamic monitoring solutions to address challenges cloud architectures pose, such as the diverse and transient nature of resources. 
+
+The development of cloud computing has heightened the complexity and necessity for efficient monitoring systems. In the framework developed by IBM in 2012, Cloud Monitor is highlighted as a pivotal solution for monitoring applications within the cloud environment. The framework depicted in \autoref{fig:ibm-cloud-monitoring} consisting of the Monitoring Server, the Monitors, and the Agents was proposed, addressing the multifaceted challenges cloud applications present, such as multiple failure points and difficulty tracking failures due to the expansive nature of cloud infrastructures~\parencite{anandCloudMonitorMonitoring2012}. This architecture marks an essential evolution in cloud monitoring strategies, impacting future research and implementations. 
 
 \begin{figure}[htpb]
   \centering
   % This should probably go into a file in figures/
   \begin{tikzpicture}[
       shorten >=1pt,
-      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily, anchor=west},
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!70}\ttfamily, anchor=west},
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+    ]
+    \node (pms) [node distance=3em, text width=8em, node] {Primary\\Monitoring\\Server};
+    \node (sms) [node distance=8em, text width=8em, node, below=of pms] {Secondary\\Monitoring Server};
+    \node (cn1) [node distance=8em, text width=4em, node, left=of pms] {Cluster\\Node};
+    \node (cn2) [node distance=8em, text width=4em, node, right=of pms] {Cluster\\Node};
+    \node (cn3) [node distance=4em, text width=4em, node, below=of cn1] {Cluster\\Node};
+    \node (cn4) [node distance=4em, text width=4em, node, below=of cn2] {Cluster\\Node};
+    \node (cn5) [node distance=4em, text width=4em, node, below=of cn3] {Cluster\\Node};
+    \node (cn6) [node distance=4em, text width=4em, node, below=of cn4] {Cluster\\Node};
+
+    \path[->] (pms) edge[font=\small] node[auto, below] {Periodic State Sync} (sms);
+    \path[->] (pms) edge[font=\small] node[auto, below] {Monitor/Agent} (cn1);
+    \path[->] (pms) edge[font=\small] node[auto, below] {Monitor/Agent} (cn2);
+    \path[->] (pms) edge[font=\small] node[auto, below] {Monitor/Agent} (cn3);
+    \path[->] (pms) edge[font=\small] node[auto, below] {Monitor/Agent} (cn4);
+    \path[->] (pms) edge[font=\small] node[auto, below] {Monitor/Agent} (cn5);
+    \path[->] (pms) edge[font=\small] node[auto, below] {Monitor/Agent} (cn6);
+  \end{tikzpicture}
+  \caption[IBM's Cloud Monitoring]{IBM's Cloud Monitoring.}\label{fig:ibm-cloud-monitoring}
+\end{figure}
+
+However, further complexities arise when monitoring large-scale distributed systems, where scalability and integration become critical. Research about a scalable and integrated cloud monitoring framework that utilizes distributed storage to enhance efficiency and stability in cloud platforms was proposed~\parencite{yongdnogScalableIntegratedCloud2013}. This approach not only improves query efficiency but also ensures the reliability of cloud services, demonstrating the evolving strategies to address the dynamic and large-scale nature of cloud resources. Nowadays, utilizing scalable time series databases like InfluxDB~\parencite{InfluxdataInfluxdb2024} has become the prevailing solution for cloud monitoring. 
+
+Similarly, a paper details another distributed architecture for effectively monitoring private clouds by combining various tasks into a single service, including Collectors, Metasensors, Distributors, and a Visualizer.~\parencite{perez-espinozaDistributedArchitectureMonitoring2015}. With the aid of Metasensors, Collectors gather data from machines and classify workloads, allowing for proactive resource management. This architecture offers a comprehensive solution leveraging machine learning to provide a detailed overview of the private cloud infrastructure. With trained neural network-based modules, the architecture's emphasis on avoiding data centralization and enhancing load balancing and fault tolerance reflects the nuanced requirements for monitoring private cloud environments effectively. 
+
+The development of message collectors significantly strengthens the foundation of cloud monitoring. cAdvisor~\parencite{GoogleCadvisor2024}, a container monitoring tool developed by Google, offers a comprehensive overview of resource usage and performance for running containers with native support. Designed specifically to monitor container metrics, it provides valuable insights into \ac{CPU}, memory, filesystem, and network usage, thereby aiding in resource management and optimization. 
+
+Regarding network monitoring, the Network Metrics Daemon~\parencite{OpenshiftNetworkmetricsdaemon2023}, an initiative by OpenShift, marks a significant advancement by collecting essential network performance metrics directly from pod and node-level operations. This tool plays a crucial role in enhancing visibility into network behavior, which is vital for identifying and addressing network-related issues within Kubernetes~\parencite{ProductionGradeContainerOrchestration} environments. 
+
+Compared to internal logs or metrics exported from an application, apparently, the metrics collected by tools like cAdvisor and the Network Metrics Daemon are cost-effective. As a result, to address challenges like latency or performance limitations in client-side monitoring, an approach that analyzes user behaviors with \ac{CPU} and network metrics to pinpoint issues at the network edge has been proposed~\parencite{filipeClientsideBlackboxMonitoring2017}. This method leverages clients' response times to infer server and network performance, thereby identifying both internal \ac{CPU} and external network bottlenecks through black-box monitoring. Proofing the effectiveness of black-box and active monitoring techniques, this research offers a complement to traditional white-box monitoring strategies, enhancing the ability to detect system bottlenecks. 
+
+To reduce overhead and achieve cost efficiency, the following researches present innovative approaches to tracking microservices and distributed systems' performance in the context of monitoring distributed systems without impacting system performance. Brondolin et al.~\parencite{brondolinBlackboxMonitoringApproach2020} and Neves et al.~\parencite{nevesDetailedBlackboxMonitoring2021} both advocate for utilizing \ac{eBPF}~\parencite{EBPFIntroductionTutorials} technology for black-box monitoring. By running the sandboxed programs as metrics collectors in the system kernel, \ac{eBPF} technology provides detailed insights into microservices' architectural metrics, application performance, and resource usage with minimal overhead. These studies underscore the significance of fine-grained observability data in managing complex modern distributed systems. 
+
+Also, an active monitoring system based on black-box monitoring principles was developed in Amadeus, utilizing the operator pattern~\parencite{OperatorPattern} for a straightforward cloud monitoring solution. As shown in \autoref{fig:amadeus-active-monitoring}, this system is structured around three main components: the operator, the scheduler, and the prober, enabling a practical and lightweight approach to cloud-native monitoring. The monitoring setup begins with users defining their configurations through \ac{CR}s, which the operator uses to set up and maintain the scheduler's monitoring tasks. The scheduler, acting as the orchestrator, initiates monitoring according to the \ac{CR}s and works with probers responsible for probing services and collecting data. Despite its efficient design, the system faces scalability issues and a potential single point of failure in the scheduler, limiting its effectiveness in large-scale, distributed environments. 
+
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!70}\ttfamily, anchor=west},
       node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
       zone/.style={draw=black!60, inner sep=8pt, anchor=base}
     ]
 
-    \node (user) [node distance=5em, text width=3em, node, circle] {User};
+    % \node (user) [node distance=5em, text width=3em, node, circle] {User};
 
     \node (operator) [node distance=3em, text width=8em, node, below=of user] {Operator\\(Handle CR)};
     \node (scheduler) [node distance=3em, text width=8em, node, below=of operator] {Scheduler\\(Manage Probers)};
@@ -28,31 +77,56 @@ Modern IT infrastructure management, monitoring, and analytics platforms ensure 
     \node (target2) [node distance=3em, text width=8em, node, left=of target1] {Target A};
     \node (target3) [node distance=3em, text width=8em, node, right=of target1] {Target C};
 
-    \node (CZ) [zone, fit={(operator) (scheduler) (prober1) (prober2) (prober3) (target1) (target2) (target3)}] {};
-    \node (C)[node distance=6pt, above=of CZ.north west, zonetag] {OpenShift Cluster};
+    % \node (CZ) [zone, fit={(operator) (scheduler) (prober1) (prober2) (prober3) (target1) (target2) (target3)}] {};
+    % \node (C)[node distance=6pt, above=of CZ.north west, zonetag] {OpenShift Platform};
 
-    \path[->] (user) edge node[auto, midway] {Create CR} (operator);
-    \path[->] (operator) edge node[auto] {Configure} (scheduler);
-    \path[->] (scheduler) edge node[auto] {Trigger} (prober1);
-    \path[->] (scheduler) edge node[auto] {Trigger} (prober2);
-    \path[->] (scheduler) edge node[auto] {Trigger} (prober3);
-    \path[->] (prober1) edge node[auto] {} (target1);
-    \path[->] (prober2) edge node[auto] {Probe} (target1);
-    \path[->] (prober3) edge node[auto] {Probe} (target3);
-    \path[->] (prober3) edge node[auto] {Probe} (target2);
+    % \path[->] (user) edge[font=\small] node[auto, midway] {Create CR} (operator);
+    \path[->] (operator) edge[font=\small] node[auto] {Configure} (scheduler);
+    \path[->] (scheduler) edge[font=\small] node[auto] {Trigger} (prober1);
+    \path[->] (scheduler) edge[font=\small] node[auto] {Trigger} (prober2);
+    \path[->] (scheduler) edge[font=\small] node[auto] {Trigger} (prober3);
+    \path[->] (prober1) edge[font=\small] node[auto] {} (target1);
+    \path[->] (prober2) edge[font=\small] node[auto] {Probe} (target1);
+    \path[->] (prober3) edge[font=\small] node[auto] {Probe} (target3);
+    \path[->] (prober3) edge[font=\small] node[auto] {Probe} (target2);
   \end{tikzpicture}
   \caption[Amadeus' Active Monitoring]{Amadeus' Active Monitoring.}\label{fig:amadeus-active-monitoring}
 \end{figure}
 
-Inspired by the Blackbox Monitoring principles, Amadeus developed the active monitoring system by integrating the Operator pattern, aiming for a simple cloud monitoring solution. As shown in \autoref{fig:amadeus-active-monitoring}, this system is architecturally composed of three pivotal elements: the operator, the scheduler, and the prober. This design facilitates a lightweight yet practical approach to cloud-native monitoring. 
+Meanwhile, comprehensive monitoring platforms like Prometheus~\parencite{PrometheusMonitoringSystem}, Datadog~\parencite{CloudMonitoringService}, and Nagios~\parencite{NagiosOpenSource} all offer robust solutions for overseeing and alerting on system metrics, reflecting the diverse ecosystem of tools and platforms catering to the nuanced needs of IT infrastructure monitoring. 
 
-Users initially tailor their monitoring setup using \ac{CR}. The operator is key in interpreting these \ac{CR}s to establish and maintain the scheduler's monitoring configuration. This approach highlights the system's flexibility, allowing users to define monitoring configurations that meet their specific needs. 
+Initially developed by SoundCloud, Prometheus is a widely adopted open-source toolkit for system monitoring and alerting. Its success stems from a potent data model, a flexible query language (PromQL), and the capability to manage high-dimensional data. Utilizing a pull model for metrics collection, Prometheus simplifies system monitoring by scraping data from endpoints without needing additional agents. This system supports extensive querying and various graphing tools, offering deep insights into system performance. However, its scalability hinges on the deployment architecture, posing challenges in managing extensive setups efficiently. 
 
-The scheduler is central to the system's functionality, orchestrating the monitoring process. It is responsible for initiating monitoring requests, per the configurations detailed in the \ac{CR}s, and coordinating with the probers to gather the requisite data. The probers, designed as workers, are tasked with executing the monitoring by probing the targeted services and directing the collected data back to the scheduler. This component-driven approach ensures a comprehensive monitoring cycle. 
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center},
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+    ]
 
-Despite its sound design, the system's limitations restrain its potency, particularly in large-scale applications. Notably, the architecture presents a single point of failure at the scheduler, posing risks of data collection interruptions and potential traffic bottlenecks. The lack of scalability poses these challenges, making it difficult to efficiently monitor a vast array of distributed services across multiple clusters. 
+    \node (ps) [node distance=5em, text width=6em, node] {Prometheus\\Server};
+    \node (sd) [node distance=5em, text width=6em, node, above=of ps] {Service\\Discovery};
+    \node (storage) [node distance=6em, text width=6em, node, below=of ps] {Storage};
+    \node (apps) [node distance=6em, text width=6em, node, left=of ps] {Applications};
+    \node (exporters) [node distance=5em, text width=6em, node, below=of apps] {Exporters};
+    \node (am) [node distance=6em, text width=6em, node, right=of ps] {Alertmanager};
+    \node (grafana) [node distance=5em, text width=6em, node, below=of am] {Grafana};
 
-\section{Datadog's Synthetic Monitoring}
+    \path[->] (ps) edge[font=\small] node[auto, right] {Find Targets} (sd);
+    \path[->] (ps) edge[font=\small] node[auto, right] {Store Data} (storage);
+    \path[->] (ps) edge[font=\small] node[auto, above] {Pull Metrics} (apps);
+    \path[->] (ps) edge[font=\small] node[auto, left] {Pull Metrics} (exporters);
+    \path[->] (ps) edge[font=\small] node[auto, above] {Push Alerts} (am);
+    \path[->] (grafana) edge[font=\small] node[auto, right] {PromQL Queries} (ps);
+
+  \end{tikzpicture}
+  \caption[Prometheus's Monitoring Architecture]{Prometheus's Monitoring Architecture.}\label{fig:prometheus-monitoring-architecture}
+\end{figure}
+
+Datadog is an integrated platform for monitoring, providing a comprehensive view of an organization's IT infrastructure by collecting and analyzing data from various sources. It features Synthetic Monitoring, which actively simulates requests and actions to gauge the performance of APIs across different network layers. This monitoring is divided into API Tests, which assess the availability and metrics of services, and Browser Tests, which simulate user interactions with services to offer experiential insights. Additionally, Datadog allows for the customization of private locations for monitoring by utilizing Docker containers, enhancing the flexibility of where and how monitoring tasks are executed. 
 
 \begin{figure}[htpb]
   \centering
@@ -66,38 +140,160 @@ Despite its sound design, the system's limitations restrain its potency, particu
 
     \node (datadog) [node distance=5em, text width=6em, node] {Datadog};
 
-    \node (agent1) [node distance=4em, text width=4em, node, below left=of datadog] {Agent};
+    \node (agent1) [node distance=3em, text width=4em, node, below left=of datadog] {Agent};
     \node (target1) [node distance=3em, text width=4em, node, left=of agent1] {Target};
-    \node (target2) [node distance=2em, text width=4em, node, below=of target1] {Target};
-    \node (target3) [node distance=2em, text width=4em, node, below=of target2] {Target};
+    \node (target2) [node distance=1em, text width=4em, node, below=of target1] {Target};
+    \node (target3) [node distance=1em, text width=4em, node, below=of target2] {Target};
     \node (CZ1) [zone, fit={(agent1) (target1) (target2) (target3)}] {};
-    \draw[->] (datadog) -| node[auto, left] {Pull Metrics} (agent1);
-    \draw[->] (agent1) edge node[auto, below] {} (target1);
-    \draw[->] (agent1) |- node[auto, right] {API Test} (target2);
-    \draw[->] (agent1) |- node[auto] {} (target3);
+    \draw[->] (datadog) -| node[auto, left, font=\small] {Pull Metrics} (agent1);
+    \draw[->] (agent1) edge node[auto, below, font=\small] {} (target1);
+    \draw[->] (agent1) |- node[auto, right, font=\small] {API Test} (target2);
+    \draw[->] (agent1) |- node[auto, font=\small] {} (target3);
 
-    \node (agent2) [node distance=4em, text width=4em, node, below right=of datadog] {Agent};
+    \node (agent2) [node distance=3em, text width=4em, node, below right=of datadog] {Agent};
     \node (target4) [node distance=3em, text width=4em, node, right=of agent2] {Target};
-    \node (target5) [node distance=2em, text width=4em, node, below=of target4] {Target};
-    \node (target6) [node distance=2em, text width=4em, node, below=of target5] {Target};
+    \node (target5) [node distance=1em, text width=4em, node, below=of target4] {Target};
+    \node (target6) [node distance=1em, text width=4em, node, below=of target5] {Target};
     \node (CZ2) [zone, fit={(agent2) (target4) (target5) (target6)}] {};
-    \draw[->] (datadog) -| node[auto, right]{Pull Metrics} (agent2);
-    \draw[->] (agent2) edge node[auto, below] {} (target4);
-    \draw[->] (agent2) |- node[auto, left] {API Test} (target5);
-    \draw[->] (agent2) |- node[auto] {} (target6);
+    \draw[->] (datadog) -| node[auto, right, font=\small]{Pull Metrics} (agent2);
+    \draw[->] (agent2) edge[font=\small] node[auto, below, font=\small] {} (target4);
+    \draw[->] (agent2) |- node[auto, left, font=\small] {API Test} (target5);
+    \draw[->] (agent2) |- node[auto, font=\small] {} (target6);
 
-    \draw[-] (agent1) edge node[auto] { Internal Network} (agent2);
+    \draw[-] (agent1) edge[font=\small] node[auto] {Internal Network} (agent2);
 
   \end{tikzpicture}
   \caption[Datadog's Synthetic Monitoring]{Datadog's Synthetic Monitoring.}\label{fig:datadog-synthetic-monitoring}
 \end{figure}
 
-% In the realm of modern IT infrastructure management, monitoring and analytics platforms play an integral role in ensuring system reliability and performance. Among the existing solutions, Datadog has emerged as a prominent player, known for its robust functionalities and capabilities~\parencite{datadogSyntheticMonitoring}. In the context of this project, which aims to design a dedicated and distributed active monitoring system, understanding Datadog's approach and technology is pivotal. 
+On the other hand, Nagios is a widely renowned player in the monitoring landscape, known for its flexibility and comprehensive plugin ecosystem. This extensibility is supported by a strong community that continuously contributes to developing new plugins and features. For example, the famous \ac{NRPE}~\parencite{NRPENagiosRemote} allows users to give remote access to plugins~\parencite{NagiosPluginsNagios} designed to perform software and hardware checks as shown in the following \autoref{fig:nagios-monitoring-nrpe}. Nagios operates on a proactive monitoring model, alerting administrators to potential issues before they become critical~\parencite{magdaNagiosbasedNetworkManagement2013}, thereby aiding in maintaining system uptime and performance. Despite its powerful features, Nagios's configuration and setup can be complex and may require a steep learning curve for new users. Additionally, its user interface and visualizations may not be as modern or intuitive as newer monitoring tools. Still, its reliability and effectiveness keep it operating in many enterprise environments. 
 
-As an integrated platform for monitoring, Datadog collects and analyzes data from multiple sources, offering a unified view of an organization's IT infrastructure. A standout feature of Datadog is the Synthetic Monitoring (see \autoref{fig:datadog-synthetic-monitoring}), which is particularly applicable for active monitoring~\parencite{datadogSyntheticMonitoring} [Data]. This feature simulates requests and actions, thereby offering insights into the performance of APIs across various network layers, from backend to frontend~\parencite{datadogAPITests}~\parencite{datadogBrowserTests}. 
+\begin{figure}[htpb]
+  \centering
+  % This should probably go into a file in figures/
+  \begin{tikzpicture}[
+      shorten >=1pt,
+      zonetag/.style={align=center},
+      node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+      zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+    ]
 
-There are two distinct elements of Datadog's Synthetic Monitoring that are of particular interest: API Tests and Browser Tests~\parencite{datadogAPITests}~\parencite{datadogBrowserTests}. API Tests actively probe target services, gathering their statuses and metrics. These tests offer a snapshot of the availability of the monitored services, a crucial factor in any active monitoring system. In Datadog's implementation, API Tests form the bulk of the monitoring process, thereby highlighting their importance. Browser Tests, on the other hand, execute defined scenarios on target services using a chosen browser. This essentially reproduces the actions of a user, providing experiential feedback about the services. This user-centric approach complements the more technical data gathered by the API Tests, contributing to a more holistic view of the system's health. 
+    \node (ncp) [node distance=3em, text width=6em, node] {NRPE Client\\Plugin};
+    \node (nc) [node distance=2em, text width=4em, node, left=of ncp] {Nagios\\Core};
+    \node (CZ1) [zone, fit={(ncp) (nc)}] {};
+    \node (C1)[node distance=6pt, above=of CZ1.north, zonetag] {Monitoring Server};
+    \draw[<-] (ncp) edge node[auto, below, font=\small] {} (nc);
 
-When it comes to monitoring availability, it is crucial to decide the position of source endpoints that proceed with monitoring~\parencite{datadogRunSyntheticTests}. Datadog provides the feature to customize private locations to execute Synthetic Monitoring. By installing Docker containers as private endpoints in desired locations, Synthetic Monitoring, including API Tests and Browser Tests, can employ these remote endpoints as its starting point. 
+    \node (nsp) [node distance=9em, text width=6em, node, right=of ncp] {NRPE Server\\Plugin};
+    \node (target1) [node distance=2em, text width=4em, node, minimum height=1em, right=of nsp, draw=none] {};
+    \node (target2) [node distance=0em, text width=5em, node, minimum height=0em, above=of target1] {check\_disk};
+    \node (target3) [node distance=0em, text width=5em, node, minimum height=1em, below=of target1] {check\_log};
+    \node (CZ2) [zone, fit={(nsp) (target1) (target2) (target3)}] {};
+    \node (C2)[node distance=6pt, above=of CZ2.north, zonetag] {Targeted Resource};
+    \draw[->] (nsp) edge[font=\small] node[auto, below, font=\small] {} (target2);
+    \draw[->] (nsp) edge[font=\small] node[auto, below, font=\small] {} (target3);
 
-While Datadog's synthetic monitoring approach presents a well-rounded solution, it operates primarily within a centralized model in terms of the agents' side. To elaborate, monitoring targets from a private location requires an installed agent in the same cluster, and the agent could be a single point of failure. 
+    \draw[->] (ncp) edge[font=\small] node[auto] {TCP Connection} (nsp);
+
+  \end{tikzpicture}
+  \caption[Nagios's Monitoring with NRPE plugin]{Nagios's Monitoring with NRPE plugin.}\label{fig:nagios-monitoring-nrpe}
+\end{figure}
+
+In summary, the related work underscores the critical evolution and diversity of monitoring strategies and solutions in addressing the complexities of modern IT infrastructure, especially in cloud and distributed system environments. The literature highlights the challenges faced and presents innovative approaches and technologies that contribute to the ongoing development of efficient, scalable, and integrated monitoring frameworks. 
+
+% \section{Amadeus' Active Monitoring}
+
+% \begin{figure}[htpb]
+%   \centering
+%   % This should probably go into a file in figures/
+%   \begin{tikzpicture}[
+%       shorten >=1pt,
+%       zonetag/.style={align=center, font=\fontsize{10}{10}\color{black!60}\ttfamily, anchor=west},
+%       node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+%       zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+%     ]
+
+%     \node (user) [node distance=5em, text width=3em, node, circle] {User};
+
+%     \node (operator) [node distance=3em, text width=8em, node, below=of user] {Operator\\(Handle CR)};
+%     \node (scheduler) [node distance=3em, text width=8em, node, below=of operator] {Scheduler\\(Manage Probers)};
+%     \node (prober1) [node distance=3em, text width=8em, node, below=of scheduler] {HTTP Prober};
+%     \node (prober2) [node distance=3em, text width=8em, node, left=of prober1] {TCP Prober};
+%     \node (prober3) [node distance=3em, text width=8em, node, right=of prober1] {HTTPS Prober};
+%     \node (target1) [node distance=3em, text width=8em, node, below=of prober1] {Target B};
+%     \node (target2) [node distance=3em, text width=8em, node, left=of target1] {Target A};
+%     \node (target3) [node distance=3em, text width=8em, node, right=of target1] {Target C};
+
+%     \node (CZ) [zone, fit={(operator) (scheduler) (prober1) (prober2) (prober3) (target1) (target2) (target3)}] {};
+%     \node (C)[node distance=6pt, above=of CZ.north west, zonetag] {OpenShift Cluster};
+
+%     \path[->] (user) edge node[auto, midway] {Create CR} (operator);
+%     \path[->] (operator) edge node[auto] {Configure} (scheduler);
+%     \path[->] (scheduler) edge node[auto] {Trigger} (prober1);
+%     \path[->] (scheduler) edge node[auto] {Trigger} (prober2);
+%     \path[->] (scheduler) edge node[auto] {Trigger} (prober3);
+%     \path[->] (prober1) edge node[auto] {} (target1);
+%     \path[->] (prober2) edge node[auto] {Probe} (target1);
+%     \path[->] (prober3) edge node[auto] {Probe} (target3);
+%     \path[->] (prober3) edge node[auto] {Probe} (target2);
+%   \end{tikzpicture}
+%   \caption[Amadeus' Active Monitoring]{Amadeus' Active Monitoring.}\label{fig:amadeus-active-monitoring}
+% \end{figure}
+
+% Inspired by the Blackbox Monitoring principles, Amadeus developed the active monitoring system by integrating the Operator pattern, aiming for a simple cloud monitoring solution. As shown in \autoref{fig:amadeus-active-monitoring}, this system is architecturally composed of three pivotal elements: the operator, the scheduler, and the prober. This design facilitates a lightweight yet practical approach to cloud-native monitoring. 
+
+% Users initially tailor their monitoring setup using \ac{CR}. The operator is key in interpreting these \ac{CR}s to establish and maintain the scheduler's monitoring configuration. This approach highlights the system's flexibility, allowing users to define monitoring configurations that meet their specific needs. 
+
+% The scheduler is central to the system's functionality, orchestrating the monitoring process. It is responsible for initiating monitoring requests, per the configurations detailed in the \ac{CR}s, and coordinating with the probers to gather the requisite data. The probers, designed as workers, are tasked with executing the monitoring by probing the targeted services and directing the collected data back to the scheduler. This component-driven approach ensures a comprehensive monitoring cycle. 
+
+% Despite its sound design, the system's limitations restrain its potency, particularly in large-scale applications. Notably, the architecture presents a single point of failure at the scheduler, posing risks of data collection interruptions and potential traffic bottlenecks. The lack of scalability poses these challenges, making it difficult to efficiently monitor a vast array of distributed services across multiple clusters. 
+
+% \section{Datadog's Synthetic Monitoring}
+
+% \begin{figure}[htpb]
+%   \centering
+%   % This should probably go into a file in figures/
+%   \begin{tikzpicture}[
+%       shorten >=1pt,
+%       zonetag/.style={align=center},
+%       node/.style={draw, align=center, minimum height=3em, anchor=west, rounded corners}, 
+%       zone/.style={draw=black!60, inner sep=8pt, anchor=base}
+%     ]
+
+%     \node (datadog) [node distance=5em, text width=6em, node] {Datadog};
+
+%     \node (agent1) [node distance=4em, text width=4em, node, below left=of datadog] {Agent};
+%     \node (target1) [node distance=3em, text width=4em, node, left=of agent1] {Target};
+%     \node (target2) [node distance=2em, text width=4em, node, below=of target1] {Target};
+%     \node (target3) [node distance=2em, text width=4em, node, below=of target2] {Target};
+%     \node (CZ1) [zone, fit={(agent1) (target1) (target2) (target3)}] {};
+%     \draw[->] (datadog) -| node[auto, left] {Pull Metrics} (agent1);
+%     \draw[->] (agent1) edge node[auto, below] {} (target1);
+%     \draw[->] (agent1) |- node[auto, right] {API Test} (target2);
+%     \draw[->] (agent1) |- node[auto] {} (target3);
+
+%     \node (agent2) [node distance=4em, text width=4em, node, below right=of datadog] {Agent};
+%     \node (target4) [node distance=3em, text width=4em, node, right=of agent2] {Target};
+%     \node (target5) [node distance=2em, text width=4em, node, below=of target4] {Target};
+%     \node (target6) [node distance=2em, text width=4em, node, below=of target5] {Target};
+%     \node (CZ2) [zone, fit={(agent2) (target4) (target5) (target6)}] {};
+%     \draw[->] (datadog) -| node[auto, right]{Pull Metrics} (agent2);
+%     \draw[->] (agent2) edge node[auto, below] {} (target4);
+%     \draw[->] (agent2) |- node[auto, left] {API Test} (target5);
+%     \draw[->] (agent2) |- node[auto] {} (target6);
+
+%     \draw[-] (agent1) edge node[auto] { Internal Network} (agent2);
+
+%   \end{tikzpicture}
+%   \caption[Datadog's Synthetic Monitoring]{Datadog's Synthetic Monitoring.}\label{fig:datadog-synthetic-monitoring}
+% \end{figure}
+
+% % In the realm of modern IT infrastructure management, monitoring and analytics platforms play an integral role in ensuring system reliability and performance. Among the existing solutions, Datadog has emerged as a prominent player, known for its robust functionalities and capabilities~\parencite{datadogSyntheticMonitoring}. In the context of this project, which aims to design a dedicated and distributed active monitoring system, understanding Datadog's approach and technology is pivotal. 
+
+% As an integrated platform for monitoring, Datadog collects and analyzes data from multiple sources, offering a unified view of an organization's IT infrastructure~\parencite{CloudMonitoringService}. A standout feature of Datadog is the Synthetic Monitoring (see~\autoref{fig:datadog-synthetic-monitoring}), which is particularly applicable for active monitoring. This feature simulates requests and actions, thereby offering insights into the performance of APIs across various network layers, from backend to frontend. 
+
+% There are two distinct elements of Datadog's Synthetic Monitoring that are of particular interest: API Tests and Browser Tests. API Tests actively probe target services, gathering their statuses and metrics. These tests offer a snapshot of the availability of the monitored services, a crucial factor in any active monitoring system. In Datadog's implementation, API Tests form the bulk of the monitoring process, thereby highlighting their importance. Browser Tests, on the other hand, execute defined scenarios on target services using a chosen browser. This essentially reproduces the actions of a user, providing experiential feedback about the services. This user-centric approach complements the more technical data gathered by the API Tests, contributing to a more holistic view of the system's health. 
+
+% When it comes to monitoring availability, it is crucial to decide the position of source endpoints that proceed with monitoring. Datadog provides the feature to customize private locations to execute Synthetic Monitoring. By installing Docker containers as private endpoints in desired locations, Synthetic Monitoring, including API Tests and Browser Tests, can employ these remote endpoints as its starting point. 
+
+% While Datadog's synthetic monitoring approach presents a well-rounded solution, it operates primarily within a centralized model in terms of the agents' side. To elaborate, monitoring targets from a private location requires an installed agent in the same cluster, and the agent could be a single point of failure. 

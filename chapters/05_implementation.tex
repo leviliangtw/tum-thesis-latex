@@ -3,15 +3,49 @@
 
 \chapter{Implementation}\label{chapter:implementation}
 
+\section{Deployment Tools}
+
+With the right tools, building a system on Kubernetes~\parencite{ProductionGradeContainerOrchestration} or OpenShift~\parencite{RedHatOpenShift} platforms becomes more convenient and efficient. The following sections will explore three dominating tools for deployment, outlining their advantages and disadvantages in various scenarios. 
+
+\subsection{Helm Chart}
+
+Helm Chart~\parencite{Helm} is a tool that simplifies applications' definition, installation, and upgrade processes in the orchestrator. It encapsulates complex deployments into manageable units by allowing users to package related resources—such as Deployments, Services, Routes, and ConfigMaps—into a single Helm Chart. This approach reduces the need to handle numerous, diverse YAML configurations and facilitates structured and versioned deployment projects. Users can craft a Helm library based on their applications' microservices, mitigating the redundancy and clutter of similar configuration files. 
+
+One of the critical advantages of Helm is its ability to simplify cloud application management. Helm provides a cohesive mechanism for deploying and managing applications by bundling related resources. It supports version control and enables easy rollbacks to previous application states, thus ensuring deployment stability. Moreover, Helm's templating engine offers dynamic resource file generation, promoting code reuse and configuration flexibility. Lastly, a community-driven charts repository further enhances its utility by providing access to a wealth of pre-defined charts for typical applications and services.
+
+However, Helm still has some drawbacks. New users may experience a learning curve to effectively create and manage charts, mainly when dealing with Helm's templating syntax and functions. Managing chart dependencies and customizations can become frightening as deployments become complex, necessitating a thorough understanding of Helm alongside Kubernetes or OpenShift. Additionally, security is a concern; improper chart management or unverified third-party charts could pose risks to cluster security. 
+
+After all, Helm's advantages in application deployment and management often outperform its drawbacks. The tool's overhead is justifiable for complex or scalable applications, though direct resource files could be more straightforward for simpler applications. By offering an efficient pathway to manage deployments on the orchestrator, Helm aligns well with Amadeus' needs for cloud-native development, balancing flexibility with control. 
+
+\subsection{Jenkins}
+
+Jenkins~\parencite{Jenkins} is an open-source automation server that enables developers to build, test, and deploy their applications efficiently. It is widely used for \ac{CI} and \ac{CD} to automate various stages of the development process. Jenkins supports many plugins, allowing it to integrate with numerous development, testing, and deployment tools~\parencite{armeniseContinuousDeliveryJenkins2015}. 
+
+Jenkins' flexibility and extensibility are its most celebrated attributes. With an active plugin ecosystem and community, Jenkins provides a range of customization options, plugins, and integrations to meet almost any \ac{CI}/\ac{CD} requirement~\parencite{shahinContinuousIntegrationDelivery2017}, making it one of the most renowned \ac{CI}/\ac{CD} tools among developers. Additionally, its platform independence guarantees compatibility with various operating systems and environments, facilitating its adoption. 
+
+Nonetheless, the sophistication of Jenkins breeds some disadvantages. The flexibility also introduces a level of complexity, particularly evident in the configuration and management of pipelines, plugins, and integrations. For larger projects, Jenkins can be resource-intensive, demanding significant hardware or cloud resources to maintain optimal performance. Additionally, the \ac{API}s and user interface of Jenkins often appear outdated and less intuitive, which can steepen the learning curve for new users. 
+
+Despite the above disadvantages, Jenkins could meet specific project needs, contributing to the automation of development processes~\parencite{arachchiContinuousIntegrationContinuous2018}. Besides, the support backed by an extensive community and a wealth of plugins makes Jenkins a critical tool in the \ac{CI}/\ac{CD} realm. Though the complexity and resource demands may pose challenges, the benefits of simplified development cycles, enhanced productivity and deployment efficiency always outweigh these concerns. 
+
+\subsection{Argo CD}
+
+Designed for the Kubernetes ecosystem, leveraging a declarative, GitOps-focused approach, Argo CD~\parencite{ArgoCDDeclarative} empowers developers to automate and manage application lifecycles efficiently. The core concept of Argo CD is the GitOps~\parencite{WeaveworksWeavegitopsWeave} principle, indicating the desired state of the application deployment is maintained in a Git repository. This innovative approach ensures that any changes from the repository are automatically reflected in the cluster, aligning the deployment state with the defined source of truth in Git. 
+
+The advantages of Argo CD are diverse, beginning with its adherence to the GitOps methodology. This alignment simplifies the management of infrastructure and application changes and improves the auditability of such modifications. By declaratively defining configurations in YAML files, Argo CD facilitates straightforward version control and rollback capabilities with its pull-based strategy, making maintaining and updating applications easier~\parencite{beetzGitOpsEvolutionDevOps2022}. Also, its integrated user interface offers a comprehensive view of the application state across clusters, simplifying developers' monitoring and management tasks. 
+
+However, there are some downsides to Argo CD. Firstly, for those new to the GitOps paradigm or declarative management, there can be a steep learning curve to master Argo CD's functionalities. Furthermore, as it is specifically tailored for orchestrators, Argo CD's utility is somewhat limited outside of containerized environments, which might restrict its applicability in diverse infrastructural contexts. Last but not least, Argo CD focuses solely on continuous deployment, so developers will still need additional tools for continuous integration~\parencite{ramadoniAnalysisUseDeclarative2021}. 
+
+In conclusion, Argo CD is a robust continuous deployment solution for the containerization environment. Its design philosophy, centered around the GitOps approach, enhances deployment reliability, configuration accuracy, and operational transparency. While the initial learning phase, lack of continuous integration, and orchestrator-centric nature may pose some obstacles, This tool improves deployment accuracy, enhances oversight, and streamlines the entire application management process. 
+
 \section{Deployment of the Prometheus Operator}
 
-This section aims to detail the preparations and procedures for the setup of the Prometheus Operator. As mentioned in previous sections, the Prometheus Operator takes responsibility for deploying and managing Prometheus Agents and probe configurations, enhancing users' experience in active monitoring. The following subsections outline and explain the modifications and deployment of the Prometheus Operator. 
+This section aims to detail the preparations and procedures for the setup of the Prometheus Operator~\parencite{PrometheusOperator}. As mentioned in previous sections, the Prometheus Operator takes responsibility for deploying and managing Prometheus Agents~\parencite{PrometheusAgentSupport} and probe configurations, enhancing users' experience in active monitoring. The following subsections outline and explain the modifications and deployment of the Prometheus Operator. 
 
 \subsection{Context}
 
 Red Hat, Inc. has been actively promoting the integration of the Prometheus Operator into OpenShift. However, the most recent distribution hasn't incorporated the Prometheus Agent. Consequently, to avoid affecting the native deployment of the Prometheus Operator in OpenShift, a modified version of the operator, along with the associated \ac{CRD}s, is required at this stage. This adaptation ensures compatibility with current OpenShift configurations and employs the Prometheus Agent's advanced monitoring features. 
 
-\subsection{Rebuild the Prometheus Operator and \ac{CRD}s}
+\subsection{Rebuild the Prometheus Operator and CRDs}
 
 To deploy a distinct Prometheus Operator for specific use cases and to prevent conflicts in environments where the native Prometheus Operator is already in use, it's essential to modify the group name of the targeted \ac{CRD}s. This process consists of implementing necessary adjustments and constructing a custom version. The steps involved are as follows: 
 
@@ -39,7 +73,7 @@ These steps help identify potential issues with the modified Prometheus Operator
 
 \section{Deployment of the Blackbox Exporter}
 
-As an extension for the Prometheus ecosystem, the Blackbox Exporter has to be deployed additionally as the terminal to raise probes. This section will introduce the setup and steps for the Blackbox Exporter. 
+As an extension for the Prometheus~\parencite{PrometheusMonitoringSystem} ecosystem, the Blackbox Exporter~\parencite{BlackboxExporter} has to be deployed additionally as the terminal to raise probes. This section will introduce the setup and steps for the Blackbox Exporter. 
 
 \subsection{Build the Blackbox Exporter Image with Necessary Modules}
 
@@ -47,7 +81,7 @@ In Amadeus, two fundamental checks - the existence check and the certificate che
 
 \begin{itemize}
     \item \textit{Existence Check Module:} Confirms network connectivity through a \ac{HTTP} GET request to an endpoint, ensuring a successful response. Configurable parameters include the \ac{URL}, anticipated \ac{HTTP} status codes, and timeout settings. 
-    \item \textit{Certificate Check Module:} Validate the existence and \ac{TLS} certificates of \ac{HTTPS} endpoints to ensure the presence, validity, and signing. Configuration includes the \ac{URL}, expiry thresholds, and CA verification details. 
+    \item \textit{Certificate Check Module:} Validate the existence and \ac{TLS} certificates of \ac{HTTPS} endpoints to ensure the presence, validity, and signing. Configuration includes the \ac{URL}, expiry thresholds, and \ac{CA} verification details. 
 \end{itemize}
 
 These modules are used to build a customized Blackbox Exporter image, which is subsequently deployed in the environment. The construction process involves the following steps: 
@@ -55,32 +89,52 @@ These modules are used to build a customized Blackbox Exporter image, which is s
 \begin{enumerate}
     \item \textbf{Create the Configuration of Two Modules:}
     Create a YAML configuration file for the Blackbox Exporter that includes these two modules. For example:
-    \begin{verbatim}
-    modules:
-      existence_check:
-        prober: http
-        timeout: 30s
-        http:
-          preferred_ip_protocol: "ip4"
-      certificate_check: 
-        prober: http
-        timeout: 30s
-        http:
-          fail_if_not_ssl: true
-          tls_config:
-            ca_file: "/certs/ca.crt"
-          preferred_ip_protocol: "ip4"
-    \end{verbatim}
+      \lstset{
+        % numbers=left,
+        % numbersep=5pt, 
+        % numberstyle=\tiny,
+        backgroundcolor=\color{gray!5},
+        xleftmargin=1em, 
+        xrightmargin=1em,
+        frame=single,
+        upquote=true}
+      \begin{lstlisting}
+        modules:
+          existence_check:
+            prober: http
+            timeout: 30s
+            http:
+              preferred_ip_protocol: "ip4"
+          certificate_check: 
+            prober: http
+            timeout: 30s
+            http:
+              fail_if_not_ssl: true
+              tls_config:
+                ca_file: "/certs/ca.crt"
+              preferred_ip_protocol: "ip4"
+      \end{lstlisting}
     \item \textbf{Build the Blackbox Exporter Image:}
     Once the configuration file is ready, incorporate it into the Blackbox Exporter Docker image for a new build. This involves creating a Dockerfile that uses the Blackbox Exporter base image, adds the configuration file, and sets necessary environment variables. Here is the Dockerfile example: 
-    \begin{verbatim}
-    FROM prom/blackbox-exporter:v0.24.0
-    COPY blackbox-config.yml /etc/blackbox_exporter/config.yml
-    ADD certs /certs
-    EXPOSE 9115
-    ENTRYPOINT [ "/bin/blackbox_exporter" ]
-    CMD [ "--config.file=/etc/blackbox_exporter/config.yml" ]
-    \end{verbatim}
+      \lstset{
+        % numbers=left,
+        % numbersep=5pt, 
+        % numberstyle=\tiny,
+        backgroundcolor=\color{gray!5},
+        xleftmargin=1em, 
+        xrightmargin=1em,
+        frame=single,
+        upquote=true}
+      \begin{lstlisting}
+        FROM prom/blackbox-exporter:v0.24.0
+
+        COPY blackbox-config.yml /etc/blackbox_exporter/config.yml
+        ADD certs /certs
+
+        EXPOSE 9115
+        ENTRYPOINT [ "/bin/blackbox_exporter" ]
+        CMD [ "--config.file=/etc/blackbox_exporter/config.yml" ]
+      \end{lstlisting}
     \item \textbf{Push the Image to the Private Container Registry:}
     After building the image, push it to a private container registry for deployment. Ensure that the cluster is authorized to pull images from this private registry. 
 \end{enumerate}
@@ -102,43 +156,111 @@ By following these steps, the deployment of the Blackbox Exporter can be ensured
 
 \subsection{Load Balancing via the Service}
 
-In the context of container orchestration, leveraging an OpenShift Service for load distribution at OSI Layer 4 is preferable and more efficient when there is no requirement for Layer 7 capabilities, such as path-based routing, thereby minimizing load-related overhead. The Service functions as a layer above the pods, creating a consolidated access point that distributes traffic evenly among different Blackbox Exporter pod instances. This method leverages kube-proxy's iptables mode for efficient traffic distribution. The following steps guide setting up load balancing with the Service: 
+In the context of container orchestration, leveraging an OpenShift Service for load distribution at \ac{OSI} Layer 4 is preferable and more efficient when there is no requirement for Layer 7 capabilities, such as path-based routing, thereby minimizing load-related overhead. The Service functions as a layer above the pods, creating a consolidated access point that distributes traffic evenly among different Blackbox Exporter pod instances. This method leverages kube-proxy's iptables mode for efficient traffic distribution. The following steps guide setting up load balancing with the Service: 
 
 \begin{enumerate}
-    \item \textbf{Create the Service Resource for the Blackbox Exporter:}
-    Define a Service resource for the Blackbox Exporter. This Service will route traffic to the selected pods. 
-    \item \textbf{Check the Connectivity of the Service Resource:}
-    Once the Service is created, it gets assigned a ClusterIP and a DNS record within the cluster. Check the connectivity to this DNS record to ensure that the Service is accessible. You can do this by running a DNS lookup or a simple curl command from a pod within the same cluster: 
-    \begin{verbatim}
-    $ nslookup blackbox-exporter-service
-    $ curl http://blackbox-exporter-service/
-    \end{verbatim}
+  \item \textbf{Create the Service Resource for the Blackbox Exporter:}
+  Define a Service resource for the Blackbox Exporter. This Service will route traffic to the selected pods. Here is an example configuration:
+
+  \begin{minipage}{\linewidth}
+    \lstset{
+      % numbers=left,
+      % numbersep=5pt, 
+      % numberstyle=\tiny,
+      backgroundcolor=\color{gray!5},
+      xleftmargin=1em, 
+      xrightmargin=1em,
+      frame=single,
+      upquote=true}
+    \begin{lstlisting}
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: blackbox-exporter-service
+      spec:
+        selector:
+        app: blackbox-exporter
+        ports:
+          - protocol: TCP
+            port: 80
+            targetPort: 9115
+        type: ClusterIP
+      \end{lstlisting}
+  \end{minipage}
+
+  \item \textbf{Check the Connectivity of the Service Resource:}
+  Once the Service is created, it gets assigned a ClusterIP and a DNS record within the cluster. Check the connectivity to this DNS record to ensure that the Service is accessible. You can do this by running a DNS lookup or a simple curl command from a pod within the same cluster: 
+    \lstset{
+      % numbers=left,
+      % numbersep=5pt, 
+      % numberstyle=\tiny,
+      backgroundcolor=\color{gray!5},
+      xleftmargin=1em, 
+      xrightmargin=1em,
+      frame=single,
+      upquote=true}
+    \begin{lstlisting}
+      $ nslookup blackbox-exporter-service
+      $ curl http://blackbox-exporter-service/
+    \end{lstlisting}
 \end{enumerate}
 
 The created Service of the Blackbox Exporter serves as a central gateway for Prometheus Agent requests. The iptables proxy mode of the kube-proxy naturally directs traffic to available pods in a random and balanced way. This configuration ensures efficient and direct routing for monitoring traffic. 
 
-\subsection{Scalability via the Horizontal Pod Autoscaler (\ac{HPA})}
+\subsection{Scalability via the Horizontal Pod Autoscaler}
 
-The \ac{HPA} boosts elasticity and cost efficiency by enabling dynamic adjustment of pod replicas in response to varying workloads, thus enhancing application scalability. It scales the number of pod replicas based on the usage of CPU, memory, or any other customized metrics\parencite{redhatCustomMetricsAutoscaler}. This section explains how to implement an \ac{HPA} for the Blackbox Exporter, allowing it to scale dynamically according to workload changes: 
+The \ac{HPA} boosts elasticity and cost efficiency by enabling dynamic adjustment of pod replicas in response to varying workloads, thus enhancing application scalability. It scales the number of pod replicas based on the usage of CPU, memory, or any other customized metrics~\parencite{CustomMetricsAutoscaler}. This section explains how to implement an \ac{HPA} for the Blackbox Exporter, allowing it to scale dynamically according to workload changes: 
+  \begin{enumerate}
+  \item \textbf{Ensure the Metrics Server:}
+  The \ac{HPA} requires metric data to make scaling decisions. Ensure that the Metrics Server responsible for collecting resource usage data is deployed in the cluster. Here is an example: 
 
-\begin{enumerate}
-    \item \textbf{Ensure the Metrics Server:}
-    The \ac{HPA} requires metric data to make scaling decisions. Ensure that the Metrics Server responsible for collecting resource usage data is deployed in the cluster. 
-    \item \textbf{Create the \ac{HPA} Resource:}
-    Define an \ac{HPA} resource in YAML format. Specify the deployment to scale, the metrics to be used for decisions, and the desired target values for those metrics. 
-    \item \textbf{Apply the \ac{HPA} Configuration:}
-    Apply the \ac{HPA} configuration to your Kubernetes cluster. 
-    \item \textbf{Adjust \ac{HPA} Parameters:}
-    Based on the observed performance, you might need to adjust the \ac{HPA} parameters, such as the target \ac{CPU} utilization or the maximum number of replicas. Update the \ac{HPA} configuration file and reapply it as necessary.
+  \begin{minipage}{\linewidth}
+    \lstset{
+      % numbers=left,
+      % numbersep=5pt, 
+      % numberstyle=\tiny,
+      backgroundcolor=\color{gray!5},
+      xleftmargin=1em, 
+      xrightmargin=1em,
+      frame=single,
+      upquote=true}
+    \begin{lstlisting}
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: blackbox-exporter-hpa
+      spec:
+        scaleTargetRef:
+          apiVersion: apps/v1
+          kind: Deployment
+          name: blackbox-exporter
+        minReplicas: 1
+        maxReplicas: 10
+        metrics:
+          - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 75
+    \end{lstlisting}
+  \end{minipage}
+  
+  \item \textbf{Create the \ac{HPA} Resource:}
+  Define an \ac{HPA} resource in YAML format. Specify the deployment to scale, the metrics to be used for decisions, and the desired target values for those metrics. 
+  \item \textbf{Apply the \ac{HPA} Configuration:}
+  Apply the \ac{HPA} configuration to your Kubernetes cluster. 
+  \item \textbf{Adjust \ac{HPA} Parameters:}
+  Based on the observed performance, you might need to adjust the \ac{HPA} parameters, such as the target \ac{CPU} utilization or the maximum number of replicas. Update the \ac{HPA} configuration file and reapply it as necessary.
 \end{enumerate}
 
 Implementing an \ac{HPA} for the Blackbox Exporter ensures that the deployment can adapt to changing demands automatically, maintaining optimal performance and resource utilization.
 
 \section{Deployment of the Prometheus Agent}
 
-To utilize the Prometheus Agent, in addition to deploying the instance, it's critical to set up the scraping metrics from targets depending on the configuration file. With the management by the Prometheus Operator, the efforts of deploying, loading, and reloading the instance could be released, greatly easing the maintenance complexity. In this section, utilizing the Prometheus Operator to deploy and maintain the Prometheus Agent will be discussed in detail. 
+To utilize the Prometheus Agent~\parencite{PrometheusAgentSupport}, in addition to deploying the instance, it's critical to set up the scraping metrics from targets depending on the configuration file. With the management by the Prometheus Operator~\parencite{PrometheusOperator}, the efforts of deploying, loading, and reloading the instance could be released, greatly easing the maintenance complexity. In this section, utilizing the Prometheus Operator to deploy and maintain the Prometheus Agent will be discussed in detail. 
 
-\subsection{Configure the Prometheus Agent Configuration based on the PrometheusAgent \ac{CRD}}
+\subsection{Configure the Prometheus Agent Configuration based on the PrometheusAgent CRD}
 
 The Prometheus Operator monitors the PrometheusAgent \ac{CRD}, which is derived from the Prometheus configuration. The primary settings in this project are the "probeSelector" and "remoteWrite" fields, which are responsible for probe configurations and specifying the remote write endpoint, respectively. 
 
@@ -146,27 +268,39 @@ The probeSelector functions as the Label Selector in this \ac{CRD}, enabling use
 
 The remoteWrite feature enables users to configure the remote endpoint to which the Prometheus Agent uploads metrics. By establishing the distributed Thanos Receive as the remote write endpoint in each local cluster, this architecture spreads some computational tasks to the edge, enhancing efficiency and availability. 
 
-\subsection{Deploy the Prometheus Agent Configuration based on the PrometheusAgent \ac{CRD}}
+\subsection{Deploy the Prometheus Agent Configuration based on the PrometheusAgent CRD}
 
 Deploying a custom object from the PrometheusAgent \ac{CRD}, which is monitored by the Prometheus Operator involves several steps to ensure successful integration and configuration. This process can be broken down into the following stages:
 
 \begin{enumerate}
 \item \textbf{Define a Custom Object from the PrometheusAgent \ac{CRD}:}
 Create a custom object in YAML format with the necessary specifications of the PrometheusAgent \ac{CRD}, including "probeSelector" and "remoteWrite" configurations. Here is an example:
-\lstset{upquote=true}
-\begin{lstlisting}
-    apiVersion: monitoring.coreos.com/v1
-    kind: PrometheusAgent
-    metadata:
-      name: example-prometheus-agent
-      namespace: monitoring
-    spec:
-      probeSelector:
-        matchLabels:
-        apps: active-monitoring
-      remoteWrite:
-        - url: http://thanos-receive.monitoring.svc.cluster.local:19291/api/v1/receive
-\end{lstlisting}
+
+  \begin{minipage}{\linewidth}
+    \lstset{
+      % numbers=left,
+      % numbersep=5pt, 
+      % numberstyle=\tiny,
+      backgroundcolor=\color{gray!5},
+      xleftmargin=1em, 
+      xrightmargin=1em,
+      frame=single,
+      upquote=true}
+    \begin{lstlisting}
+      apiVersion: monitoring.coreos.com/v1
+      kind: PrometheusAgent
+      metadata:
+        name: example-prometheus-agent
+        namespace: monitoring
+      spec:
+        probeSelector:
+          matchLabels:
+          apps: active-monitoring
+        remoteWrite:
+          - url: http://thanos-receive.monitoring:19291/api/v1/receive
+    \end{lstlisting}
+  \end{minipage}
+
 \item \textbf{Apply a Custom Object:}
 Deploy the Prometheus Agent by applying the custom object in the cluster. 
 \item \textbf{Verify the Deployment:}
@@ -179,40 +313,48 @@ Following these steps, the Prometheus Agent is successfully deployed and configu
 
 As of now, the preliminary settings have been completed, and users can utilize the Probe \ac{CRD} to create an active monitoring configuration. This section will provide detailed instructions on configuring it, followed by the necessary steps. 
 
-\subsection{Configure the Monitoring Configuration Based on the Probe \ac{CRD}}
+\subsection{Configure the Monitoring Configuration Based on the Probe CRD}
 
 With the Probe \ac{CRD}, users can conveniently define monitoring for a set of targets, facilitating cloud-native configuration management within the cloud platform. The module, prober, and targets are the three most important fields for the configuration. 
 
 The "module" field in Prometheus configures how targets are probed, often using settings from the Blackbox exporter. The "prober" field specifies the prober details, with the essential "prober.url" parameter. "targets" defines a set of static or dynamic targets for the prober to monitor. Also, the "metadata.labels" needs to be set in coherent with the "probeSelector.matchLabels" in PrometheusAgent. 
 
-\subsection{Deploy the Monitoring Configuration Based on the Probe \ac{CRD}}
+\subsection{Deploy the Monitoring Configuration Based on the Probe CRD}
 
 Deploying the custom object from the Probe \ac{CRD} is the last crucial step in active monitoring using Prometheus. It involves creating and applying the monitor configuration, ensuring that the specified targets are actively monitored based on the defined parameters. Here are the steps for the deployment:
 
 \begin{enumerate}
     \item \textbf{Define a Custom Object from the Probe \ac{CRD}:}
     Create a custom object in YAML format to establish the desired monitoring configurations. Ensure that this object includes all essential fields, such as module, prober, and targets. Additionally, confirm that the metadata.labels within the object match the probeSelector.matchLabels specified in the previous section. For example, please refer to the provided code below. 
-        \lstset{upquote=true}
-        \begin{lstlisting}
-            apiVersion: monitoring.ruup.amadeus.net/v1
-            kind: Probe
-            metadata:
-              labels:
-                apps: active-monitoring
-              name: probe-example
-            spec:
-              interval: 15s
-              jobName: probe-example
-              module: existence_check
-              prober:
-                path: /probe
-                scheme: http
-                url: blackbox-exporter-service:9115
-              targets:
-                staticConfig:
-                  static:
-                    - 'http://example.com/'
-        \end{lstlisting}
+    \lstset{
+      % numbers=left,
+      % numbersep=5pt, 
+      % numberstyle=\tiny,
+      backgroundcolor=\color{gray!5},
+      xleftmargin=1em, 
+      xrightmargin=1em,
+      frame=single,
+      upquote=true}
+      \begin{lstlisting}
+        apiVersion: monitoring.ruup.amadeus.net/v1
+        kind: Probe
+        metadata:
+          labels:
+            apps: active-monitoring
+          name: probe-example
+        spec:
+          interval: 15s
+          jobName: probe-example
+          module: existence_check
+          prober:
+            path: /probe
+            scheme: http
+            url: blackbox-exporter-service:9115
+          targets:
+            staticConfig:
+              static:
+                - 'http://www.example.amadeus.net/'
+      \end{lstlisting}
     \item \textbf{Apply a Custom Object:}
     Once the custom object is ready, apply it to the targeted cluster. 
     \item \textbf{Verify the Deployment:}
@@ -223,15 +365,40 @@ Deploying the custom object from the Probe \ac{CRD} is the last crucial step in 
 
 After these steps, the custom object based on the Probe \ac{CRD} is deployed, enabling active monitoring of specified targets using Prometheus Agent. This setup facilitates efficient and dynamic monitoring in cloud-native platforms. 
 
-\section{GitOps for managing \ac{CRD}s}
+\section{GitOps for managing CRDs}
 
-GitOps can automate and manage infrastructure configurations using Git as a single source. In this section, we realize GitOps principles to manage \ac{CRD}s using, the Argo CD, a declarative continuous delivery tool for GitOps. 
+GitOps~\parencite{WeaveworksWeavegitopsWeave} can automate and manage infrastructure configurations using Git as a single source. In this section, we realize GitOps principles to manage \ac{CRD}s using, the Argo CD~\parencite{ArgoCDDeclarative}, a declarative continuous delivery tool for GitOps. 
 
-\subsection{Create Git Repository for \ac{CRD}s}
+\subsection{Create Git Repository for CRDs}
 
 \begin{enumerate}
     \item \textbf{Initialize a Git Repository:} Create a new Git repository, which will host all the \ac{CRD} manifests and related configurations. Users could use GitHub, GitLab, or any other Git hosting service for this purpose.
-    \item \textbf{Add \ac{CRD} Manifests:} Upload \ac{CRD} manifests into the repository with a well-set structure and directory. Ensure each \ac{CRD} manifest is written in YAML format and correctly structured.
+    \item \textbf{Add \ac{CRD} Manifests:} Upload \ac{CRD} manifests into the repository with a well-set structure and directory. Ensure each \ac{CRD} manifest is written in YAML format and correctly structured as the following example: 
+      \lstset{
+        % numbers=left,
+        % numbersep=5pt, 
+        % numberstyle=\tiny,
+        backgroundcolor=\color{gray!5},
+        xleftmargin=1em, 
+        xrightmargin=1em,
+        frame=single,
+        upquote=true}
+      \begin{lstlisting}
+        apiVersion: argoproj.io/v1alpha1
+        kind: Application
+        metadata:
+          name: amadeus-active-monitoring-crds
+        spec:
+          destination:
+            name: 
+            namespace: amadeus-active-monitoring
+            server: 'https://kubernetes.default.svc'
+          source:
+            path: active-monitoring-crds
+            repoURL: 'https://bitbucket.amadeus.net/aop/am.git'
+            targetRevision: HEAD
+          project: default
+      \end{lstlisting}
     \item \textbf{Version Control:} Adopt the branching strategy to maintain different versions or environments. Then, commit and push changes to the remote repository. 
 \end{enumerate}
 
@@ -242,7 +409,7 @@ GitOps can automate and manage infrastructure configurations using Git as a sing
     \item \textbf{Configure Repository Settings:} Configure the synchronization settings, such as automated sync policies, sync frequency, and other repository-specific settings as required by your deployment strategy. 
 \end{enumerate}
 
-\subsection{Deploy \ac{CRD}s with Argo CD}
+\subsection{Deploy CRDs with Argo CD}
 
 \begin{enumerate}
     \item \textbf{Create an Application in Argo CD:} In Argo CD, "Application" represents a set of resources to be deployed. Create a new Application and link it to the directory in your Git repository where the \ac{CRD} manifests are stored. 
